@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMAGENIA — Muebles de Exterior Premium</title>
+  <meta name="description" content="Transformamos plástico reciclado en soluciones duraderas para hoteles, desarrollos inmobiliarios y espacios al aire libre.">
+  <link rel="stylesheet" href="/css/styles.css?v=1.8">
+</head>
+<body>
+
+  <!-- ── Nav placeholder ── -->
+  <div id="nav-placeholder"></div>
+
+  <main>
+
+    <!-- ═══ HERO SLIDER ═══ -->
+    <section class="hero-slider" id="hero-slider" aria-label="Hero">
+      <!-- Slides rendered by JS -->
+      <div id="slides-container"></div>
+
+      <!-- Arrows -->
+      <button class="slider-btn slider-prev" id="slider-prev" aria-label="Anterior" onclick="sliderPrev()">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+      <button class="slider-btn slider-next" id="slider-next" aria-label="Siguiente" onclick="sliderNext()">
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+
+      <!-- Dots -->
+      <div class="slider-dots" id="slider-dots"></div>
+    </section>
+
+    <!-- ═══ ACERCA DE + BENEFICIOS ═══ -->
+    <section class="section">
+      <div class="container">
+        <div class="about-layout">
+          <div class="about-text">
+            <h2 id="about-title">Soluciones que Transforman Espacios</h2>
+            <p id="about-text" style="margin-top:1rem"></p>
+          </div>
+          <div class="about-benefits" id="about-benefits">
+            <div class="benefit-row">
+              <span class="material-symbols-outlined benefit-icon">shield</span>
+              <div>
+                <div class="benefit-title">Durabilidad Excepcional</div>
+                <div class="benefit-desc">40+ años de vida útil. Inmune a la pudrición, moho y termitas sin ningún tratamiento químico.</div>
+              </div>
+            </div>
+            <div class="benefit-row">
+              <span class="material-symbols-outlined benefit-icon">cleaning_services</span>
+              <div>
+                <div class="benefit-title">Bajo Mantenimiento</div>
+                <div class="benefit-desc">Solo agua y jabón. Sin pintar, lijar ni sellar. La solución permanente que se ve impecable siempre.</div>
+              </div>
+            </div>
+            <div class="benefit-row">
+              <span class="material-symbols-outlined benefit-icon">eco</span>
+              <div>
+                <div class="benefit-title">Impacto Ecológico Real</div>
+                <div class="benefit-desc">100% reciclado y reciclable. Cada pieza desvía toneladas de plástico de los océanos.</div>
+              </div>
+            </div>
+            <div class="benefit-row">
+              <span class="material-symbols-outlined benefit-icon">trending_up</span>
+              <div>
+                <div class="benefit-title">Alto Valor de Inversión</div>
+                <div class="benefit-desc">Mayor ROI para desarrolladores y hoteles al eliminar los ciclos de mantenimiento y aumentar la valoración del proyecto.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ NUESTRAS CATEGORÍAS ═══ -->
+    <section class="section section-alt">
+      <div class="container">
+        <div style="text-align:center;margin-bottom:3rem">
+          <span class="label-sm text-secondary">Catálogo</span>
+          <h2 style="margin-top:0.5rem;color:var(--primary)">Nuestras <span style="color:var(--secondary)">Categorías</span></h2>
+        </div>
+        <div class="cat-img-grid" id="category-grid">
+          <div class="cat-img-card skeleton"></div>
+          <div class="cat-img-card skeleton"></div>
+          <div class="cat-img-card skeleton"></div>
+          <div class="cat-img-card skeleton"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PROMO BANNER ═══ -->
+    <section class="counter-section" id="counter-section" aria-label="Contador de impacto">
+      <!-- Rendered by JS from site_settings -->
+    </section>
+
+    <!-- ═══ PROMO BANNER ═══ -->
+    <section class="promo-banner" id="promo-banner-section">
+      <div class="promo-banner-bg" id="promo-banner-bg"></div>
+      <div class="promo-banner-overlay"></div>
+      <div class="promo-banner-content">
+        <h2 id="promo-banner-text">Pregunta por nuestros proyectos y soluciones para tu empresa</h2>
+        <a href="/contacto.html" id="promo-banner-cta" class="btn-white">¡Contáctanos!</a>
+      </div>
+    </section>
+
+    <!-- ═══ PRODUCTOS ═══ -->
+    <section class="section">
+      <div class="container">
+        <div style="text-align:center;margin-bottom:2rem">
+          <h2 style="color:var(--primary)">Productos</h2>
+        </div>
+        <div class="tabs" style="justify-content:center;margin-bottom:2.5rem">
+          <button class="tab-btn active" id="tab-bestseller" onclick="switchTab('bestseller',this)">Más vendidos</button>
+          <button class="tab-btn" id="tab-new" onclick="switchTab('new',this)">Novedades</button>
+          <button class="tab-btn" id="tab-featured" onclick="switchTab('featured',this)">Destacados</button>
+        </div>
+        <div class="product-grid" id="products-grid-home"></div>
+        <div style="text-align:center;margin-top:2.5rem">
+          <a href="/productos.html" class="btn btn-secondary">Ver todos los productos</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ FORMULARIO COTIZACIÓN ═══ -->
+    <section class="section section-alt" id="cotizacion">
+      <div class="container">
+        <div class="quote-layout">
+          <div class="quote-image" id="quote-image-wrap">
+            <div class="quote-image-placeholder">
+              <span class="material-symbols-outlined">deck</span>
+            </div>
+          </div>
+          <div class="quote-form-panel">
+            <h3>Compártenos tu proyecto</h3>
+            <p>Cuéntanos sobre tu proyecto y nuestro equipo te contactará con una propuesta personalizada.</p>
+            <form id="contact-form">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+                <div class="form-group">
+                  <label class="form-label">Nombre *</label>
+                  <input type="text" class="form-input" id="f-nombre" required placeholder="Tu nombre">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Empresa</label>
+                  <input type="text" class="form-input" id="f-empresa" placeholder="Tu empresa">
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+                <div class="form-group">
+                  <label class="form-label">Email *</label>
+                  <input type="email" class="form-input" id="f-email" required placeholder="correo@empresa.com">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Teléfono</label>
+                  <input type="tel" class="form-input" id="f-tel" placeholder="+52 55 1234 5678">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Producto de interés</label>
+                <input type="text" class="form-input" id="f-producto" placeholder="Ej: Silla Nero, Sombrilla Dubai...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Comentarios</label>
+                <textarea class="form-textarea" id="f-comentarios" placeholder="Cuéntanos sobre tu proyecto, cantidad, espacio..."></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary btn-full mt-2" id="contact-btn">Solicitar Asesoría</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── Footer placeholder ── -->
+  <div id="footer-placeholder"></div>
+
+  <script type="module" src="/js/home.js?v=20260430_v2"></script>
+</body>
+</html>

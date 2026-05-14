@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — IMAGENIA</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <!-- Quill CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
+  <style>
+    body{display:flex;min-height:100svh;background:var(--surface-container-low)}
+    .admin-sidebar{width:240px;background:var(--primary);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;bottom:0;left:0;z-index:10;overflow-y:auto}
+    .admin-sidebar-logo{padding:1.5rem 1.25rem;font-family:'Manrope',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;border-bottom:1px solid rgba(255,255,255,0.1)}
+    .admin-sidebar-logo span{display:block;font-size:0.65rem;font-weight:500;opacity:0.5;letter-spacing:0.1em;text-transform:uppercase;margin-top:0.15rem}
+    .admin-nav{padding:1rem 0;flex:1}
+    .admin-nav-item{display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1.25rem;color:rgba(255,255,255,0.65);font-family:'Manrope',sans-serif;font-weight:600;font-size:0.875rem;cursor:pointer;transition:all 0.2s;border:none;background:none;width:100%;text-align:left}
+    .admin-nav-item:hover{color:#fff;background:rgba(255,255,255,0.08)}
+    .admin-nav-item.active{color:#fff;background:rgba(255,255,255,0.15)}
+    .admin-nav-item .material-symbols-outlined{font-size:1.25rem}
+    .admin-nav-section{padding:0.5rem 1.25rem;font-size:0.6rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-top:0.5rem}
+    .admin-main{margin-left:240px;flex:1;padding:2rem;max-width:1200px}
+    .admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem}
+    .admin-header h1{font-size:1.5rem;color:var(--primary)}
+    .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem}
+    .stat-card{background:var(--surface-container-lowest);padding:1.5rem;border-radius:var(--radius-md);box-shadow:var(--shadow-card)}
+    .stat-value{font-family:'Manrope',sans-serif;font-weight:800;font-size:2rem;color:var(--primary)}
+    .stat-label{font-size:0.75rem;color:var(--on-surface-variant);margin-top:0.25rem}
+    .panel{background:var(--surface-container-lowest);border-radius:var(--radius-md);box-shadow:var(--shadow-card);overflow:hidden}
+    .panel-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--surface-container-high);display:flex;align-items:center;justify-content:space-between}
+    .panel-header h3{font-family:'Manrope',sans-serif;font-weight:700;color:var(--primary);font-size:1rem}
+    .panel-body{padding:1.5rem}
+    table{width:100%;border-collapse:collapse;font-size:0.875rem}
+    th{padding:0.75rem 1rem;text-align:left;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--on-surface-variant);background:var(--surface-container-low);border-bottom:1px solid var(--surface-container-high)}
+    td{padding:0.875rem 1rem;border-bottom:1px solid var(--surface-container-low);color:var(--on-surface);vertical-align:middle}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:var(--surface-container-low)}
+    .badge{display:inline-block;padding:0.2rem 0.6rem;border-radius:99px;font-size:0.65rem;font-weight:700;letter-spacing:0.05em}
+    .badge-green{background:var(--secondary-container);color:var(--on-secondary-container)}
+    .badge-grey{background:var(--surface-container-high);color:var(--on-surface-variant)}
+    .badge-red{background:#fde8e8;color:var(--error)}
+    .action-btns{display:flex;gap:0.5rem}
+    .btn-icon-sm{width:2rem;height:2rem;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);cursor:pointer;transition:background 0.2s;border:none}
+    .btn-edit{background:var(--secondary-container);color:var(--on-secondary-container)}
+    .btn-edit:hover{background:var(--primary);color:#fff}
+    .btn-del{background:#fde8e8;color:var(--error)}
+    .btn-del:hover{background:var(--error);color:#fff}
+    .section-hidden{display:none!important}
+    .img-thumb{width:48px;height:48px;object-fit:cover;border-radius:var(--radius-sm);background:var(--surface-container-low)}
+    .settings-grid{display:grid;gap:1rem}
+    .setting-row{display:grid;grid-template-columns:220px 1fr auto;gap:1rem;align-items:center;padding:0.875rem 0;border-bottom:1px solid var(--surface-container-low)}
+    .setting-label{font-size:0.8rem;font-weight:600;color:var(--on-surface-variant)}
+    .setting-input{background:var(--surface-container-low);border:none;border-bottom:2px solid var(--surface-container-high);padding:0.5rem 0;font-family:'Inter',sans-serif;font-size:0.875rem;color:var(--on-surface);outline:none;width:100%}
+    .setting-input:focus{border-bottom-color:var(--primary)}
+    .upload-btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:0.5rem}
+    .upload-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+    .tab-sections{display:none}
+    .tab-sections.visible{display:block}
+    @media(max-width:900px){.admin-sidebar{transform:translateX(-100%)}.admin-main{margin-left:0}.stats-grid{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-logo">IMAGENIA<span>Panel de control</span></div>
+    <nav class="admin-nav">
+      <div class="admin-nav-section">General</div>
+      <button class="admin-nav-item active" onclick="showSection('dashboard',this)">
+        <span class="material-symbols-outlined">dashboard</span>Dashboard
+      </button>
+      <button class="admin-nav-item" onclick="showSection('settings',this)">
+        <span class="material-symbols-outlined">tune</span>Contenido del sitio
+      </button>
+      <button class="admin-nav-item" onclick="showSection('counter',this)">
+        <span class="material-symbols-outlined">counter_1</span>Contador Plástico
+      </button>
+      <div class="admin-nav-section">Home</div>
+      <button class="admin-nav-item" onclick="showSection('slides',this)">
+        <span class="material-symbols-outlined">slideshow</span>Hero Slider
+      </button>
+      <button class="admin-nav-item" onclick="showSection('impact',this)">
+        <span class="material-symbols-outlined">eco</span>Impacto Stats
+      </button>
+      <button class="admin-nav-item" onclick="showSection('blogs',this)">
+        <span class="material-symbols-outlined">article</span>Blogs
+      </button>
+      <button class="admin-nav-item" onclick="showSection('comparisons',this)">
+        <span class="material-symbols-outlined">compare_arrows</span>Comparaciones
+      </button>
+      <button class="admin-nav-item" onclick="showSection('clients',this)">
+        <span class="material-symbols-outlined">handshake</span>Clientes / Logos
+      </button>
+      <div class="admin-nav-section">Catálogo</div>
+      <button class="admin-nav-item" onclick="showSection('products',this)">
+        <span class="material-symbols-outlined">chair</span>Productos
+      </button>
+      <button class="admin-nav-item" onclick="showSection('categories',this)">
+        <span class="material-symbols-outlined">category</span>Categorías
+      </button>
+      <button class="admin-nav-item" onclick="showSection('tags',this)">
+        <span class="material-symbols-outlined">label</span>Tags / Filtros
+      </button>
+      <button class="admin-nav-item" onclick="showSection('catalogs',this)">
+        <span class="material-symbols-outlined">menu_book</span>Catálogos
+      </button>
+      <div class="admin-nav-section">Formularios</div>
+      <button class="admin-nav-item" onclick="showSection('contacts',this)">
+        <span class="material-symbols-outlined">mail</span>Mensajes
+      </button>
+      <div class="admin-nav-section">WhatsApp</div>
+      <button class="admin-nav-item" onclick="showSection('wa-questions',this)">
+        <span class="material-symbols-outlined">quiz</span>Preguntas del chat
+      </button>
+      <button class="admin-nav-item" onclick="showSection('wa-leads',this)">
+        <span class="material-symbols-outlined">contacts</span>Leads capturados
+      </button>
+    </nav>
+    <div style="padding:1rem 1.25rem;border-top:1px solid rgba(255,255,255,0.1)">
+      <button class="admin-nav-item" onclick="doSignOut()" style="color:rgba(255,255,255,0.5)">
+        <span class="material-symbols-outlined">logout</span>Cerrar sesión
+      </button>
+      <a href="/index.html" class="admin-nav-item" style="text-decoration:none;margin-top:0.25rem">
+        <span class="material-symbols-outlined">open_in_new</span>Ver sitio
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="admin-main">
+
+    <!-- Dashboard -->
+    <div id="sec-dashboard" class="tab-sections visible">
+      <div class="admin-header"><h1>Dashboard</h1></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-value" id="stat-products">—</div><div class="stat-label">Productos activos</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-catalogs">—</div><div class="stat-label">Catálogos</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-contacts">—</div><div class="stat-label">Mensajes</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-blogs-total">—</div><div class="stat-label">Blogs totales</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-blogs-active">—</div><div class="stat-label">Blogs activos</div></div>
+      </div>
+      <div class="panel"><div class="panel-header"><h3>Actividad reciente — Mensajes</h3></div>
+        <div class="panel-body"><table><thead><tr><th>Nombre</th><th>Email</th><th>Empresa</th><th>Fecha</th></tr></thead>
+          <tbody id="dash-contacts"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- Site Settings -->
+    <div id="sec-settings" class="tab-sections">
+      <div class="admin-header"><h1>Contenido del sitio</h1>
+        <button class="btn btn-primary btn-sm" onclick="saveSettings()">Guardar cambios</button>
+      </div>
+      <div class="panel"><div class="panel-body"><div id="settings-container"></div></div></div>
+    </div>
+
+    <!-- Contador Plástico -->
+    <div id="sec-counter" class="tab-sections">
+      <div class="admin-header"><h1>Contador de Plástico Reciclado</h1>
+        <button class="btn btn-primary btn-sm" onclick="saveCounterSettings()">Guardar contador</button>
+      </div>
+      <!-- Live preview -->
+      <div class="panel" style="margin-bottom:1.5rem">
+        <div class="panel-body" style="text-align:center;padding:3rem 2rem">
+          <div id="counter-preview-num" style="font-family:'Manrope',sans-serif;font-weight:800;font-size:6rem;color:var(--secondary);line-height:1;letter-spacing:0.04em">1,563</div>
+          <div id="counter-preview-label" style="font-family:'Manrope',sans-serif;font-weight:700;font-size:1rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--secondary);margin-top:0.75rem">Toneladas de Plástico Recuperado</div>
+          <div id="counter-preview-sublabel" style="font-size:0.8rem;color:var(--on-surface-variant);margin-top:0.5rem"></div>
+          <p style="font-size:0.7rem;color:var(--on-surface-variant);margin-top:1.5rem;opacity:0.6">Vista previa — se actualiza al escribir</p>
+        </div>
+      </div>
+      <!-- Fields -->
+      <div class="panel"><div class="panel-body">
+        <div class="settings-grid">
+          <div class="setting-row">
+            <div class="setting-label">Número actual <span style="font-size:0.7rem;opacity:0.6">(solo números, sin comas)</span></div>
+            <input type="number" class="setting-input" id="counter-value-input" placeholder="1563"
+              oninput="document.getElementById('counter-preview-num').textContent=parseInt(this.value||0).toLocaleString('es-MX')">
+            <span></span>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Etiqueta principal</div>
+            <input type="text" class="setting-input" id="counter-label-input" placeholder="Toneladas de Plástico Recuperado"
+              oninput="document.getElementById('counter-preview-label').textContent=this.value">
+            <span></span>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Sub-etiqueta</div>
+            <input type="text" class="setting-input" id="counter-sublabel-input" placeholder="Y contando — cada pieza IMAGENIA contribuye al planeta"
+              oninput="document.getElementById('counter-preview-sublabel').textContent=this.value">
+            <span></span>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Prefijo (ej: +, ~)</div>
+            <input type="text" class="setting-input" id="counter-prefix-input" placeholder="" style="max-width:120px">
+            <span></span>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Sufijo (ej: T, kg)</div>
+            <input type="text" class="setting-input" id="counter-suffix-input" placeholder="" style="max-width:120px">
+            <span></span>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Color de fondo (hex)</div>
+            <input type="color" class="setting-input" id="counter-bg-input" value="#f6f3f2" style="max-width:120px;height:2.5rem;padding:0.25rem">
+            <span></span>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Visible en el sitio</div>
+            <select class="setting-input" id="counter-active-input">
+              <option value="true">Activo</option>
+              <option value="false">Inactivo</option>
+            </select>
+            <span></span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Hero Slider -->
+    <div id="sec-slides" class="tab-sections">
+      <div class="admin-header"><h1>Hero Slider</h1>
+        <button class="btn btn-primary btn-sm" onclick="openSlideModal()">+ Agregar slide</button>
+      </div>
+      <div class="panel"><div style="overflow-x:auto">
+        <table><thead><tr><th>Imagen</th><th>Título</th><th>Subtítulo</th><th>CTA</th><th>Orden</th><th>Activo</th><th></th></tr></thead>
+        <tbody id="slides-table"></tbody></table>
+      </div></div>
+    </div>
+
+    <!-- Impact Stats -->
+    <div id="sec-impact" class="tab-sections">
+      <div class="admin-header"><h1>Impacto Stats</h1>
+        <button class="btn btn-primary btn-sm" onclick="openImpactModal()">+ Agregar stat</button>
+      </div>
+      <div class="panel"><div style="overflow-x:auto">
+        <table><thead><tr><th>Ícono</th><th>Valor</th><th>Label</th><th>Título</th><th>Orden</th><th>Activo</th><th></th></tr></thead>
+        <tbody id="impact-table"></tbody></table>
+      </div></div>
+    </div>
+
+    <!-- Blogs -->
+    <div id="sec-blogs" class="tab-sections">
+      <div class="admin-header"><h1>Blogs</h1>
+        <button class="btn btn-primary btn-sm" onclick="openBlogModal()">+ Agregar blog</button>
+      </div>
+      <div class="panel"><div style="overflow-x:auto">
+        <table><thead><tr><th>Imagen</th><th>Título</th><th>Resumen</th><th>Link / PDF</th><th>Orden</th><th>Activo</th><th></th></tr></thead>
+        <tbody id="blogs-table"></tbody></table>
+      </div></div>
+    </div>
+
+    <!-- Comparaciones -->
+    <div id="sec-comparisons" class="tab-sections">
+      <div class="admin-header"><h1>Tabla de Comparaciones</h1>
+        <button class="btn btn-primary btn-sm" onclick="openCompModal()">+ Agregar fila</button>
+      </div>
+      <div class="panel"><div style="overflow-x:auto">
+        <table><thead><tr><th>Característica</th><th>IMAGENIA</th><th>Tradicional</th><th>Orden</th><th>Activo</th><th></th></tr></thead>
+        <tbody id="comparisons-table"></tbody></table>
+      </div></div>
+    </div>
+
+    <!-- Clientes / Logos -->
+    <div id="sec-clients" class="tab-sections">
+      <div class="admin-header"><h1>Clientes / Logos</h1>
+        <button class="btn btn-primary btn-sm" onclick="openClientModal()">+ Agregar cliente</button>
+      </div>
+      <div class="panel"><div style="overflow-x:auto">
+        <table><thead><tr><th>Logo</th><th>Nombre</th><th>Enlace del Proyecto</th><th>Orden</th><th>Activo</th><th></th></tr></thead>
+        <tbody id="clients-table"></tbody></table>
+      </div></div>
+    </div>
+
+    <!-- WA Questions -->
+    <div id="sec-wa-questions" class="tab-sections">
+      <div class="admin-header"><h1>Preguntas del chat WhatsApp</h1>
+        <button class="btn btn-primary btn-sm" onclick="openWAQModal()">+ Agregar pregunta</button>
+      </div>
+      <div class="panel" style="margin-bottom:1.5rem;padding:1rem 1.5rem;background:var(--surface-container-low);border-radius:var(--radius-md)">
+        <p style="font-size:0.85rem;color:var(--on-surface-variant)">
+          💡 Estas preguntas aparecen en el widget de WhatsApp. El cliente las responde y se genera un mensaje personalizado.
+          Usa <strong>{1}, {2}, {3}...</strong> en la plantilla de mensaje (Contenido del sitio → <em>whatsapp_template</em>) para insertar las respuestas.
+        </p>
+      </div>
+      <div class="panel"><div style="overflow-x:auto">
+        <table><thead><tr><th>Orden</th><th>Pregunta</th><th>Tipo</th><th>Obligatoria</th><th>Activa</th><th></th></tr></thead>
+        <tbody id="wa-questions-table"></tbody></table>
+      </div></div>
+    </div>
+
+    <!-- WA Leads -->
+    <div id="sec-wa-leads" class="tab-sections">
+      <div class="admin-header"><h1>Leads de WhatsApp</h1>
+        <button class="btn btn-secondary btn-sm" onclick="exportWALeads()">Exportar CSV</button>
+      </div>
+      <div class="panel"><div style="overflow-x:auto">
+        <table><thead><tr><th>Fecha</th><th>Respuestas</th><th>Mensaje enviado</th><th></th></tr></thead>
+        <tbody id="wa-leads-table"></tbody></table>
+      </div></div>
+    </div>
+
+    <!-- Products -->
+    <div id="sec-products" class="tab-sections">
+      <div class="admin-header"><h1>Productos</h1>
+        <button class="btn btn-primary btn-sm" onclick="openProductModal()">+ Agregar producto</button>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <input type="text" placeholder="Buscar producto..." class="setting-input" style="max-width:280px" oninput="filterProducts(this.value)">
+          <span id="product-count" style="font-size:0.8rem;color:var(--on-surface-variant)"></span>
+        </div>
+        <div style="overflow-x:auto">
+          <table><thead><tr><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Tags</th><th>Flags</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="products-table"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div id="sec-categories" class="tab-sections">
+      <div class="admin-header"><h1>Categorías</h1>
+        <button class="btn btn-primary btn-sm" onclick="openCatModal()">+ Agregar categoría</button>
+      </div>
+      <div class="panel"><div style="overflow-x:auto">
+        <table><thead><tr><th>Nombre</th><th>Slug</th><th>Ícono</th><th>Orden</th><th>Activa</th><th></th></tr></thead>
+        <tbody id="categories-table"></tbody></table>
+      </div></div>
+    </div>
+
+    <!-- Tags and Groups -->
+    <div id="sec-tags" class="tab-sections">
+      <div class="admin-header"><h1>Tags / Filtros</h1>
+        <div style="display:flex;gap:0.75rem">
+          <button class="btn btn-secondary btn-sm" onclick="openGroupModal()">+ Grupo de filtros</button>
+          <button class="btn btn-primary btn-sm" onclick="openTagModal()">+ Agregar tag</button>
+        </div>
+      </div>
+      <div class="panel" style="margin-bottom: 2rem;">
+        <h3 style="padding: 1rem 1.5rem; margin: 0; font-family: 'Manrope', sans-serif; font-size: 1.1rem; border-bottom: 1px solid var(--surface-container-low);">Grupos de Filtros</h3>
+        <div style="overflow-x:auto">
+          <table><thead><tr><th>Nombre</th><th>Slug</th><th>Orden</th><th></th></tr></thead>
+          <tbody id="groups-table"></tbody></table>
+        </div>
+      </div>
+      <div class="panel">
+        <h3 style="padding: 1rem 1.5rem; margin: 0; font-family: 'Manrope', sans-serif; font-size: 1.1rem; border-bottom: 1px solid var(--surface-container-low);">Tags</h3>
+        <div style="overflow-x:auto">
+          <table><thead><tr><th>Tag</th><th>Grupo</th><th>Slug</th><th>Orden</th><th>Activo</th><th></th></tr></thead>
+          <tbody id="tags-table"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Catalogs -->
+    <div id="sec-catalogs" class="tab-sections">
+      <div class="admin-header"><h1>Catálogos</h1>
+        <button class="btn btn-primary btn-sm" onclick="openCatalogModal()">+ Agregar catálogo</button>
+      </div>
+      <div class="panel"><div style="overflow-x:auto">
+        <table><thead><tr><th>Portada</th><th>Título</th><th>Categoría</th><th>Año</th><th>PDF</th><th>Estado</th><th></th></tr></thead>
+        <tbody id="catalogs-table"></tbody></table>
+      </div></div>
+    </div>
+
+
+
+    <!-- Contacts -->
+    <div id="sec-contacts" class="tab-sections">
+      <div class="admin-header"><h1>Mensajes de contacto</h1></div>
+      <div class="panel"><div style="overflow-x:auto">
+        <table><thead><tr><th>Nombre</th><th>Empresa</th><th>Email</th><th>Teléfono</th><th>Comentarios</th><th>Fecha</th></tr></thead>
+        <tbody id="contacts-table"></tbody></table>
+      </div></div>
+    </div>
+
+  </main>
+
+  <!-- MODALS -->
+  <!-- Product Modal -->
+  <div class="modal-overlay" id="modal-product">
+    <div class="modal" style="max-width:700px">
+      <div class="modal-header">
+        <h3 id="pm-title">Producto</h3>
+        <button class="modal-close" onclick="closeModal('modal-product')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="pm-id">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Nombre *</label>
+            <input type="text" class="form-input" id="pm-name" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">SKU (Opcional)</label>
+            <input type="text" class="form-input" id="pm-sku" placeholder="Ej: ART-001">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Slug * (único, sin espacios)</label>
+            <input type="text" class="form-input" id="pm-slug" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Categoría</label>
+            <select class="form-select" id="pm-category"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Orden</label>
+            <input type="number" class="form-input" id="pm-order" value="0">
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Descripción</label>
+            <textarea class="form-textarea" id="pm-desc" style="min-height:80px"></textarea>
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Imagen principal</label>
+            <div style="display:flex;gap:1rem;align-items:center">
+              <input type="url" class="form-input" id="pm-image" placeholder="URL o sube una imagen">
+              <label class="btn btn-secondary btn-sm upload-btn">
+                <span class="material-symbols-outlined" style="font-size:1rem">upload</span> Subir
+                <input type="file" accept="image/*" onchange="uploadProductImage(this)">
+              </label>
+            </div>
+            <div id="pm-img-preview" style="margin-top:0.75rem"></div>
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Tags (selecciona uno o más)</label>
+            <div id="pm-tags" style="display:flex;flex-wrap:wrap;gap:0.5rem;max-height:180px;overflow-y:auto;padding:0.5rem;background:var(--surface-container-low);border-radius:var(--radius-sm)"></div>
+          </div>
+          <div class="form-group" style="grid-column:1/-1;display:flex;gap:2rem">
+            <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer">
+              <input type="checkbox" id="pm-bestseller" style="accent-color:var(--primary)"> Más vendido
+            </label>
+            <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer">
+              <input type="checkbox" id="pm-new" style="accent-color:var(--primary)"> Novedad
+            </label>
+            <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer">
+              <input type="checkbox" id="pm-featured" style="accent-color:var(--primary)"> Destacado
+            </label>
+            <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer">
+              <input type="checkbox" id="pm-active" checked style="accent-color:var(--primary)"> Activo
+            </label>
+          </div>
+        </div>
+        <div style="margin-top:1.5rem;display:flex;gap:1rem;justify-content:flex-end">
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-product')">Cancelar</button>
+          <button class="btn btn-primary btn-sm" onclick="saveProduct()" id="pm-save">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Modal -->
+  <div class="modal-overlay" id="modal-cat">
+    <div class="modal" style="max-width:480px">
+      <div class="modal-header">
+        <h3 id="cm-title">Categoría</h3>
+        <button class="modal-close" onclick="closeModal('modal-cat')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="cm-id">
+        <div class="form-group"><label class="form-label">Nombre *</label><input type="text" class="form-input" id="cm-name"></div>
+        <div class="form-group"><label class="form-label">Slug *</label><input type="text" class="form-input" id="cm-slug"></div>
+        <div class="form-group">
+          <label class="form-label">Ícono</label>
+          <!-- Preview + input -->
+          <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem">
+            <div id="cm-icon-preview" style="width:48px;height:48px;border-radius:var(--radius-md);background:var(--surface-container-low);display:flex;align-items:center;justify-content:center;border:1.5px solid var(--outline-variant);flex-shrink:0">
+              <span class="material-symbols-outlined" id="cm-icon-preview-glyph" style="font-size:1.75rem;color:var(--primary)">deck</span>
+            </div>
+            <input type="text" class="form-input" id="cm-icon" placeholder="Escribe el nombre exacto del ícono (ej: shopping_cart)..."
+              oninput="filterIcons(this.value);document.getElementById('cm-icon-preview-glyph').textContent=this.value||'deck';document.getElementById('google-icon-search').href='https://fonts.google.com/icons?selected=Material+Symbols+Outlined&icon.query='+encodeURIComponent(this.value)"
+              autocomplete="off">
+          </div>
+          <!-- Icon grid -->
+          <div id="cm-icon-grid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:4px;max-height:200px;overflow-y:auto;padding:0.5rem;background:var(--surface-container-low);border-radius:var(--radius-sm);border:1px solid var(--outline-variant)"></div>
+          
+          <div style="margin-top:0.75rem;padding:0.75rem;background:rgba(21,66,18,0.05);border-radius:var(--radius-sm);border:1px dashed var(--outline-variant)">
+            <p style="font-size:0.75rem;color:var(--on-surface-variant);margin-bottom:0.5rem">
+              <strong>💡 Tip:</strong> El panel muestra algunas sugerencias, pero puedes usar <strong>cualquiera de los +2,500 íconos de Google</strong>. 
+              Solo escribe el nombre exacto en inglés. Si lo ves en el cuadro de la izquierda, ¡ya funciona!
+            </p>
+            <a href="https://fonts.google.com/icons?selected=Material+Symbols+Outlined" target="_blank" id="google-icon-search" class="btn btn-secondary btn-sm" style="display:inline-flex;align-items:center;gap:0.5rem;font-size:0.75rem;padding:0.25rem 0.75rem">
+              <span class="material-symbols-outlined" style="font-size:1rem">search</span> Buscar en Google Fonts
+            </a>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Imagen URL</label>
+          <div style="display:flex;gap:0.75rem;align-items:center">
+            <input type="url" class="form-input" id="cm-image" placeholder="URL de imagen">
+            <label class="btn btn-secondary btn-sm upload-btn">
+              <span class="material-symbols-outlined" style="font-size:1rem">upload</span> Subir
+              <input type="file" accept="image/*" onchange="uploadCatImage(this)">
+            </label>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Orden</label><input type="number" class="form-input" id="cm-order" value="0"></div>
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;margin-bottom:1.5rem">
+          <input type="checkbox" id="cm-active" checked style="accent-color:var(--primary)"> Activa
+        </label>
+        <div style="display:flex;gap:1rem;justify-content:flex-end">
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-cat')">Cancelar</button>
+          <button class="btn btn-primary btn-sm" onclick="saveCat()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tag Group Modal -->
+  <div class="modal-overlay" id="modal-group">
+    <div class="modal" style="max-width:400px">
+      <div class="modal-header">
+        <h3>Grupo de filtros</h3>
+        <button class="modal-close" onclick="closeModal('modal-group')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="gm-id">
+        <div class="form-group"><label class="form-label">Nombre * (ej: "Tipo de Producto")</label><input type="text" class="form-input" id="gm-name"></div>
+        <div class="form-group"><label class="form-label">Slug * (ej: "tipo")</label><input type="text" class="form-input" id="gm-slug"></div>
+        <div class="form-group"><label class="form-label">Orden</label><input type="number" class="form-input" id="gm-order" value="0"></div>
+        <div style="display:flex;gap:1rem;justify-content:flex-end">
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-group')">Cancelar</button>
+          <button class="btn btn-primary btn-sm" onclick="saveGroup()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tag Modal -->
+  <div class="modal-overlay" id="modal-tag">
+    <div class="modal" style="max-width:400px">
+      <div class="modal-header">
+        <h3 id="tm-title">Tag</h3>
+        <button class="modal-close" onclick="closeModal('modal-tag')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="tm-id">
+        <div class="form-group"><label class="form-label">Grupo *</label><select class="form-select" id="tm-group"></select></div>
+        <div class="form-group"><label class="form-label">Nombre * (ej: "Gris")</label><input type="text" class="form-input" id="tm-name" oninput="autoSlug(this,'tm-slug')"></div>
+        <div class="form-group"><label class="form-label">Slug *</label><input type="text" class="form-input" id="tm-slug"></div>
+        <div class="form-group"><label class="form-label">Orden</label><input type="number" class="form-input" id="tm-order" value="0"></div>
+        <div style="display:flex;gap:1rem;justify-content:flex-end">
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-tag')">Cancelar</button>
+          <button class="btn btn-primary btn-sm" onclick="saveTag()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Catalog Modal -->
+  <div class="modal-overlay" id="modal-catalog">
+    <div class="modal" style="max-width:560px">
+      <div class="modal-header">
+        <h3 id="catm-title">Catálogo</h3>
+        <button class="modal-close" onclick="closeModal('modal-catalog')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="catm-id">
+        <div class="form-group"><label class="form-label">Título *</label><input type="text" class="form-input" id="catm-title-in"></div>
+        <div class="form-group"><label class="form-label">Subtítulo</label><input type="text" class="form-input" id="catm-sub"></div>
+        <div class="form-group"><label class="form-label">Categoría (slug)</label><input type="text" class="form-input" id="catm-cat" placeholder="exterior, sombrillas..."></div>
+        <div class="form-group"><label class="form-label">Año</label><input type="number" class="form-input" id="catm-year" value="2025"></div>
+        <div class="form-group">
+          <label class="form-label">PDF *</label>
+          <div style="display:flex;gap:0.75rem;align-items:center">
+            <input type="url" class="form-input" id="catm-pdf" placeholder="URL del PDF">
+            <label class="btn btn-secondary btn-sm upload-btn">
+              <span class="material-symbols-outlined" style="font-size:1rem">upload</span> Subir PDF
+              <input type="file" accept=".pdf" onchange="uploadPDF(this)">
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Imagen de portada</label>
+          <div style="display:flex;gap:0.75rem;align-items:center">
+            <input type="url" class="form-input" id="catm-cover" placeholder="URL de imagen">
+            <label class="btn btn-secondary btn-sm upload-btn">
+              <span class="material-symbols-outlined" style="font-size:1rem">upload</span> Subir imagen
+              <input type="file" accept="image/*" onchange="uploadCatalogCover(this)">
+            </label>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Orden</label><input type="number" class="form-input" id="catm-order" value="0"></div>
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;margin-bottom:1.5rem">
+          <input type="checkbox" id="catm-active" checked style="accent-color:var(--primary)"> Activo
+        </label>
+        <div style="display:flex;gap:1rem;justify-content:flex-end">
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-catalog')">Cancelar</button>
+          <button class="btn btn-primary btn-sm" onclick="saveCatalog()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide Modal -->
+  <div class="modal-overlay" id="modal-slide">
+    <div class="modal" style="max-width:560px">
+      <div class="modal-header">
+        <h3 id="slm-title">Slide</h3>
+        <button class="modal-close" onclick="closeModal('modal-slide')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="slm-id">
+        <div class="form-group"><label class="form-label">Título</label><input type="text" class="form-input" id="slm-title-in" placeholder="Muebles de Exterior Premium"></div>
+        <div class="form-group"><label class="form-label">Subtítulo</label><textarea class="form-textarea" id="slm-subtitle" style="min-height:70px" placeholder="Descripción breve..."></textarea></div>
+        <div class="form-group">
+          <label class="form-label">Imagen *</label>
+          <div style="display:flex;gap:0.75rem;align-items:center">
+            <input type="url" class="form-input" id="slm-image" placeholder="URL de imagen">
+            <label class="btn btn-secondary btn-sm upload-btn">
+              <span class="material-symbols-outlined" style="font-size:1rem">upload</span> Subir
+              <input type="file" accept="image/*" onchange="uploadSlideImage(this)">
+            </label>
+          </div>
+          <div id="slm-img-preview" style="margin-top:0.75rem"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-group"><label class="form-label">CTA Texto</label><input type="text" class="form-input" id="slm-cta-text" placeholder="Ver Catálogos"></div>
+          <div class="form-group"><label class="form-label">CTA URL</label><input type="url" class="form-input" id="slm-cta-url" placeholder="/catalogos.html"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Orden</label><input type="number" class="form-input" id="slm-order" value="0"></div>
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;margin-bottom:1.5rem">
+          <input type="checkbox" id="slm-active" checked style="accent-color:var(--primary)"> Activo
+        </label>
+        <div style="display:flex;gap:1rem;justify-content:flex-end">
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-slide')">Cancelar</button>
+          <button class="btn btn-primary btn-sm" onclick="saveSlide()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Impact Stat Modal (extended with title + description) -->
+  <div class="modal-overlay" id="modal-impact">
+    <div class="modal" style="max-width:520px">
+      <div class="modal-header">
+        <h3 id="imp-title">Stat de impacto</h3>
+        <button class="modal-close" onclick="closeModal('modal-impact')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="imp-id">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-group"><label class="form-label">Ícono (Material Symbol) *</label><input type="text" class="form-input" id="imp-icon" placeholder="eco"></div>
+          <div class="form-group"><label class="form-label">Valor *</label><input type="text" class="form-input" id="imp-value" placeholder="2,400 T"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Label (corto, para footer) *</label><input type="text" class="form-input" id="imp-label" placeholder="Toneladas recicladas en 2024"></div>
+        <div class="form-group"><label class="form-label">Título (para página Impacto)</label><input type="text" class="form-input" id="imp-stat-title" placeholder="Sustentabilidad"></div>
+        <div class="form-group"><label class="form-label">Descripción (para página Impacto)</label><textarea class="form-textarea" id="imp-description" style="min-height:80px" placeholder="Descripción detallada..."></textarea></div>
+        <div class="form-group"><label class="form-label">Orden</label><input type="number" class="form-input" id="imp-order" value="0"></div>
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;margin-bottom:1.5rem">
+          <input type="checkbox" id="imp-active" checked style="accent-color:var(--primary)"> Activo
+        </label>
+        <div style="display:flex;gap:1rem;justify-content:flex-end">
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-impact')">Cancelar</button>
+          <button class="btn btn-primary btn-sm" onclick="saveImpact()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Blog Modal -->
+  <div class="modal-overlay" id="modal-blog">
+    <div class="modal" style="max-width:560px">
+      <div class="modal-header">
+        <h3 id="blog-modal-title">Blog</h3>
+        <button class="modal-close" onclick="closeModal('modal-blog')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="blog-id">
+        <div class="form-group"><label class="form-label">Título *</label><input type="text" class="form-input" id="blog-title" placeholder="Ej: Nuevo material reciclado"></div>
+        <div class="form-group"><label class="form-label">Resumen (Excerpt)</label><textarea class="form-textarea" id="blog-excerpt" style="min-height:60px"></textarea></div>
+        <div class="form-group">
+          <label class="form-label">Contenido de la Noticia</label>
+          <div id="blog-content-editor" style="height:250px; background:var(--surface-container-lowest); border-radius:0 0 var(--radius-sm) var(--radius-sm);"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Imagen de Portada</label>
+          <div style="display:flex;gap:0.75rem;align-items:center">
+            <input type="url" class="form-input" id="blog-image" placeholder="URL de imagen">
+            <label class="btn btn-secondary btn-sm upload-btn">
+              <span class="material-symbols-outlined" style="font-size:1rem">upload</span> Subir
+              <input type="file" accept="image/*" onchange="uploadBlogImage(this)">
+            </label>
+          </div>
+          <div id="blog-img-preview" style="margin-top:0.75rem"></div>
+        </div>
+        <div class="form-group"><label class="form-label">PDF / Link del Blog (Se abrirá en iframe)</label><input type="url" class="form-input" id="blog-content-url" placeholder="https://..."></div>
+        <div class="form-group"><label class="form-label">Orden</label><input type="number" class="form-input" id="blog-order" value="0"></div>
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;margin-bottom:1.5rem">
+          <input type="checkbox" id="blog-active" checked style="accent-color:var(--primary)"> Activo
+        </label>
+        <div style="display:flex;gap:1rem;justify-content:flex-end">
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-blog')">Cancelar</button>
+          <button class="btn btn-primary btn-sm" onclick="saveBlog()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison Modal -->
+  <div class="modal-overlay" id="modal-comp">
+    <div class="modal" style="max-width:560px">
+      <div class="modal-header">
+        <h3 id="comp-modal-title">Fila de comparación</h3>
+        <button class="modal-close" onclick="closeModal('modal-comp')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="cmp-id">
+        <div class="form-group"><label class="form-label">Característica *</label><input type="text" class="form-input" id="cmp-feature" placeholder="Durabilidad"></div>
+        <div class="form-group"><label class="form-label">Columna IMAGENIA *</label><textarea class="form-textarea" id="cmp-imagenia" style="min-height:70px" placeholder="Inmune a la pudricón, moho y termitas. 40+ años."></textarea></div>
+        <div class="form-group"><label class="form-label">Columna Tradicional *</label><textarea class="form-textarea" id="cmp-trad" style="min-height:70px" placeholder="Susceptible a descomposición. 10-15 años."></textarea></div>
+        <div class="form-group"><label class="form-label">Orden</label><input type="number" class="form-input" id="cmp-order" value="0"></div>
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;margin-bottom:1.5rem">
+          <input type="checkbox" id="cmp-active" checked style="accent-color:var(--primary)"> Activo
+        </label>
+        <div style="display:flex;gap:1rem;justify-content:flex-end">
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-comp')">Cancelar</button>
+          <button class="btn btn-primary btn-sm" onclick="saveComp()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WA Question Modal -->
+  <div class="modal-overlay" id="modal-waq">
+    <div class="modal" style="max-width:520px">
+      <div class="modal-header">
+        <h3 id="waq-modal-title">Pregunta del chat</h3>
+        <button class="modal-close" onclick="closeModal('modal-waq')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="waq-id">
+        <div class="form-group"><label class="form-label">Pregunta *</label><input type="text" class="form-input" id="waq-question" placeholder="¿Cuál es tu nombre?"></div>
+        <div class="form-group"><label class="form-label">Placeholder (sugerencia)</label><input type="text" class="form-input" id="waq-placeholder" placeholder="Ej: Carlos Martínez"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-group">
+            <label class="form-label">Tipo de campo</label>
+            <select class="form-select" id="waq-type" onchange="toggleWAQOptions(this.value)">
+              <option value="text">Texto corto</option>
+              <option value="textarea">Texto largo</option>
+              <option value="select">Selección</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Orden</label>
+            <input type="number" class="form-input" id="waq-order" value="0">
+          </div>
+        </div>
+        <div class="form-group" id="waq-options-wrap" style="display:none">
+          <label class="form-label">Opciones (separadas por coma)</label>
+          <input type="text" class="form-input" id="waq-options" placeholder="Opción A,Opción B,Opción C">
+        </div>
+        <div style="display:flex;gap:2rem;margin-bottom:1.5rem">
+          <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer">
+            <input type="checkbox" id="waq-required" checked style="accent-color:var(--primary)"> Obligatoria
+          </label>
+          <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer">
+            <input type="checkbox" id="waq-active" checked style="accent-color:var(--primary)"> Activa
+          </label>
+        </div>
+        <div style="display:flex;gap:1rem;justify-content:flex-end">
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-waq')">Cancelar</button>
+          <button class="btn btn-primary btn-sm" onclick="saveWAQ()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client Logo Modal -->
+  <div class="modal-overlay" id="modal-client">
+    <div class="modal" style="max-width:560px">
+      <div class="modal-header">
+        <h3 id="clm-title">Cliente / Logo</h3>
+        <button class="modal-close" onclick="closeModal('modal-client')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="clm-id">
+        <div class="form-group">
+          <label class="form-label">Nombre del Cliente *</label>
+          <input type="text" class="form-input" id="clm-name" placeholder="Hotel Paraíso">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Logo (Imagen) *</label>
+          <div style="display:flex;gap:0.75rem;align-items:center">
+            <input type="url" class="form-input" id="clm-logo" placeholder="URL del logo (PNG, SVG, etc.)" oninput="document.getElementById('clm-img-preview').innerHTML=generatePreviewHtml(this.value)">
+            <label class="btn btn-secondary btn-sm upload-btn">
+              <span class="material-symbols-outlined" style="font-size:1rem">upload</span> Subir
+              <input type="file" accept="image/*" onchange="uploadClientLogo(this)">
+            </label>
+          </div>
+          <div id="clm-img-preview" style="margin-top:0.75rem"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Enlace del Proyecto (Redirección)</label>
+          <input type="url" class="form-input" id="clm-link" placeholder="https://ejemplo.com/proyecto">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Orden</label>
+          <input type="number" class="form-input" id="clm-order" value="0">
+        </div>
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;margin-bottom:1.5rem">
+          <input type="checkbox" id="clm-active" checked style="accent-color:var(--primary)"> Activo
+        </label>
+        <div style="display:flex;gap:1rem;justify-content:flex-end">
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-client')">Cancelar</button>
+          <button class="btn btn-primary btn-sm" onclick="saveClient()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDF Preview Modal -->
+  <div class="modal-overlay" id="modal-pdf-preview">
+    <div class="modal" style="max-width:1000px; height:90vh; display:flex; flex-direction:column; padding:0; overflow:hidden;">
+      <div class="modal-header" style="padding:1rem 1.5rem; border-bottom:1px solid var(--outline-variant); background:var(--surface-container-lowest); display:flex; justify-content:space-between; align-items:center;">
+        <h3 id="pdf-preview-title" style="margin:0; font-family:'Manrope',sans-serif; color:var(--primary);">Preview</h3>
+        <button class="modal-close" style="background:none;border:none;cursor:pointer;color:var(--on-surface);" onclick="closeModal('modal-pdf-preview'); document.getElementById('pdf-iframe').src='';"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body" style="flex:1; padding:0; background:#ececec;">
+        <iframe id="pdf-iframe" src="" style="width:100%; height:100%; border:none;"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quill JS -->
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+  <script type="module" src="/js/admin.js?v=1.1"></script>
+</body>
+</html>

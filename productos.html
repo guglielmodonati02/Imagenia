@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Productos — IMAGENIA</title>
+  <meta name="description" content="Explora toda la colección de muebles de exterior IMAGENIA. Filtra por tipo, color, material y más.">
+  <link rel="stylesheet" href="/css/styles.css?v=1.1">
+  <style>
+    .products-layout { display:flex; gap:2.5rem; align-items:flex-start; }
+    .filters-sidebar { width:240px; flex-shrink:0; position:sticky; top:6rem; }
+    .filter-clear { background:none;border:none;color:var(--secondary);font-size:0.8rem;font-weight:600;cursor:pointer;padding:0;margin-left:auto; }
+    .products-main { flex:1;min-width:0; }
+    .products-toolbar { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem; }
+    .products-count { font-size:0.875rem;color:var(--on-surface-variant); }
+    .sort-select { background:var(--surface-container-low);border:none;border-radius:var(--radius-sm);padding:0.5rem 1rem;font-family:'Manrope',sans-serif;font-weight:600;font-size:0.85rem;color:var(--on-surface);cursor:pointer; }
+    .mobile-filter-btn { display:none; }
+    @media(max-width:900px){
+      .filters-sidebar { display:none;position:fixed;top:0;left:0;bottom:0;z-index:300;background:var(--surface);padding:2rem;overflow-y:auto;width:280px;box-shadow:4px 0 24px rgba(27,28,28,0.12);transition:transform var(--transition); }
+      .filters-sidebar.mobile-open { display:block; }
+      .mobile-filter-btn { display:flex; }
+    }
+    .filter-overlay { display:none;position:fixed;inset:0;background:rgba(27,28,28,0.4);z-index:299; }
+    .filter-overlay.open { display:block; }
+    .no-products { text-align:center;padding:5rem 2rem;grid-column:1/-1; }
+    .no-products .material-symbols-outlined { font-size:4rem;color:var(--outline-variant);display:block;margin-bottom:1rem; }
+    .filter-group-toggle { cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none; }
+    .filter-group-body { overflow:hidden;transition:max-height 0.3s ease; }
+    .filter-group-body.collapsed { max-height:0; }
+  </style>
+</head>
+<body>
+  <div id="nav-placeholder"></div>
+  <main>
+    <div class="page-header">
+      <div class="container">
+        <span class="label-sm text-secondary">Catálogo</span>
+        <h1>Productos</h1>
+        <p>Muebles de exterior premium para cualquier espacio y clima.</p>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="container">
+        <!-- Category tabs -->
+        <div class="tabs mb-4" id="cat-tabs">
+          <button class="tab-btn active" onclick="setCategory('todos',this)">
+            <span class="material-symbols-outlined">grid_view</span>
+            Todos
+          </button>
+          <!-- more tabs added by JS -->
+        </div>
+
+        <!-- Active filters -->
+        <div id="active-filters" class="active-filters"></div>
+
+        <!-- Mobile filter button -->
+        <div class="products-toolbar">
+          <button class="btn btn-secondary btn-sm mobile-filter-btn" onclick="openMobileFilters()">
+            <span class="material-symbols-outlined" style="font-size:1.1rem">tune</span> Filtros
+          </button>
+          <span class="products-count" id="products-count">Cargando...</span>
+          <select class="sort-select" id="sort-select" onchange="loadProducts()">
+            <option value="sort_order">Orden predeterminado</option>
+            <option value="name_asc">Nombre A–Z</option>
+            <option value="name_desc">Nombre Z–A</option>
+            <option value="newest">Más recientes</option>
+            <option value="featured">Destacados</option>
+          </select>
+        </div>
+
+        <div class="products-layout">
+          <!-- Filters -->
+          <div class="filters-sidebar" id="filters-sidebar">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+              <span class="label-sm text-primary">Filtros</span>
+              <button class="filter-clear" onclick="clearFilters()">Limpiar</button>
+            </div>
+            <div id="filter-groups">
+              <!-- Rendered by JS -->
+              <div class="skeleton" style="height:180px;border-radius:var(--radius-sm)"></div>
+            </div>
+          </div>
+
+          <!-- Products grid -->
+          <div class="products-main">
+            <div class="product-grid" id="products-grid">
+              <div class="card skeleton" style="height:300px"></div>
+              <div class="card skeleton" style="height:300px"></div>
+              <div class="card skeleton" style="height:300px"></div>
+              <div class="card skeleton" style="height:300px"></div>
+              <div class="card skeleton" style="height:300px"></div>
+              <div class="card skeleton" style="height:300px"></div>
+            </div>
+            <div class="pagination" id="pagination"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mobile filter overlay -->
+    <div class="filter-overlay" id="filter-overlay" onclick="closeMobileFilters()"></div>
+  </main>
+  <div id="footer-placeholder"></div>
+
+  <!-- Quick-view modal -->
+  <div class="modal-overlay" id="qv-modal">
+    <div class="modal" style="max-width:760px">
+      <div class="modal-header">
+        <h3 id="qv-name">Producto</h3>
+        <button class="modal-close" onclick="closeModal()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
+          <div style="aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;background:var(--surface-container-low)" id="qv-image"></div>
+          <div>
+            <div id="qv-category" class="card-tag mb-2"></div>
+            <div id="qv-sku" style="font-family:'Manrope',sans-serif; font-weight:700; font-size:0.8rem; color:var(--primary); margin-bottom:0.5rem; display:none;"></div>
+            <p id="qv-desc" class="text-muted" style="font-size:0.9rem;margin-bottom:1.5rem"></p>
+            <div id="qv-tags" class="card-tags mb-3"></div>
+            <a id="qv-cotizar" href="/contacto.html" class="btn btn-primary btn-full">Cotizar este producto</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/productos.js"></script>
+</body>
+</html>

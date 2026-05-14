@@ -1,0 +1,14 @@
+# Base de datos y scripts SQL
+*.sql
+
+# Archivos y recursos de diseño
+design/
+/design
+
+# Variables de entorno y configuraciones sensibles
+.env
+.env.*
+
+# Archivos del sistema (macOS / Windows)
+.DS_Store
+Thumbs.db

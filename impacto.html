@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Impacto — IMAGENIA</title>
+  <meta name="description" content="Conoce el impacto ambiental y económico de los materiales sustentables IMAGENIA: durabilidad, bajo mantenimiento y alta sustentabilidad.">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    /* ── Impacto page-specific styles ───────────────── */
+    .impacto-hero {
+      padding: 9rem 2rem 6rem;
+      background: var(--surface);
+    }
+    .impacto-hero-inner {
+      max-width: 1440px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+    }
+    @media (max-width: 900px) { .impacto-hero-inner { grid-template-columns: 1fr; gap: 3rem; } }
+    .impacto-hero-badge {
+      display: inline-block; padding: 0.3rem 1rem;
+      background: var(--secondary-container); color: var(--on-secondary-container);
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; border-radius: var(--radius-sm); margin-bottom: 1.5rem;
+    }
+    .impacto-hero h1 { color: var(--primary); margin-bottom: 1.25rem; }
+    .impacto-hero p { color: var(--on-surface-variant); font-size: 1.05rem; line-height: 1.75; max-width: 540px; margin-bottom: 2rem; }
+    .impacto-hero-img-wrap { position: relative; }
+    .impacto-hero-img-wrap::before {
+      content: ''; position: absolute; inset: -1.5rem;
+      background: var(--primary-fixed-dim); opacity: 0.15;
+      border-radius: 50%; filter: blur(40px);
+    }
+    .impacto-hero-img {
+      position: relative; border-radius: var(--radius-lg);
+      overflow: hidden; aspect-ratio: 4/5; box-shadow: 0 32px 64px rgba(27,28,28,0.18);
+      background: var(--surface-container-low);
+    }
+    .impacto-hero-img img { width: 100%; height: 100%; object-fit: cover; }
+    .impacto-hero-img-placeholder {
+      width: 100%; height: 100%; min-height: 400px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .impacto-hero-img-placeholder .material-symbols-outlined { font-size: 6rem; color: rgba(255,255,255,0.2); }
+    .impacto-hero-stat {
+      position: absolute; bottom: -2rem; left: -2rem;
+      background: var(--surface-container-lowest);
+      padding: 1.5rem 2rem; border-radius: var(--radius-md);
+      box-shadow: 0 16px 40px rgba(27,28,28,0.12);
+      border: 1px solid var(--surface-container-low);
+      transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 5;
+    }
+    .stats-moved .impacto-hero-stat {
+      bottom: -1rem;
+      left: 12.5%;
+      padding: 0.75rem 2rem;
+      transform: translateY(100%);
+      width: 75%;
+      box-shadow: 0 8px 24px rgba(27,28,28,0.08);
+    }
+    .impacto-hero-stat-val { font-family: 'Manrope',sans-serif; font-weight: 800; font-size: 2.5rem; color: var(--primary); transition: font-size 0.6s ease; }
+    .stats-moved .impacto-hero-stat-val { font-size: 1.5rem; }
+    .impacto-hero-stat-lbl { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--on-surface-variant); margin-top: 0.25rem; }
+
+    /* Impact cards */
+    .impact-cards-section { background: var(--surface-container-low); padding: 6rem 2rem; }
+    .impact-cards-inner { max-width: 1440px; margin: 0 auto; }
+    .impact-cards-header { margin-bottom: 3.5rem; }
+    .impact-cards-header h2 { color: var(--primary); margin-bottom: 0.75rem; }
+    .impact-cards-header-bar { width: 5rem; height: 4px; background: var(--secondary); border-radius: 99px; }
+    .impact-cards-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 2rem; }
+    @media (max-width: 1100px) { .impact-cards-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 600px) { .impact-cards-grid { grid-template-columns: 1fr; } }
+    .impact-card {
+      background: var(--surface-container-lowest); padding: 2.5rem;
+      border-radius: var(--radius-md);
+      transition: transform var(--transition), box-shadow var(--transition);
+      box-shadow: var(--shadow-card);
+    }
+    .impact-card:hover { transform: translateY(-8px); box-shadow: 0 20px 48px rgba(27,28,28,0.1); }
+    .impact-card-icon { font-size: 2.5rem; color: var(--secondary); margin-bottom: 1.25rem; display: block; }
+    .impact-card-title { font-family: 'Manrope',sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--primary); margin-bottom: 0.75rem; }
+    .impact-card-desc { font-size: 0.875rem; color: var(--on-surface-variant); line-height: 1.65; }
+
+    /* Why section */
+    .why-section { padding: 7rem 2rem; background: var(--surface); }
+    .why-inner { max-width: 1440px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+    @media (max-width: 900px) { .why-inner { grid-template-columns: 1fr; gap: 3rem; } }
+    .why-text h2 { color: var(--primary); margin-bottom: 2rem; }
+    .why-text p { color: var(--on-surface-variant); line-height: 1.75; margin-bottom: 1.25rem; font-size: 1rem; }
+    .why-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2.5rem; }
+    .why-metric-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--secondary); margin-bottom: 0.4rem; }
+    .why-metric-value { font-family: 'Manrope',sans-serif; font-weight: 800; font-size: 1.75rem; color: var(--primary); }
+    .why-images { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .why-img { border-radius: var(--radius-md); height: 260px; overflow: hidden; background: var(--surface-container-low); box-shadow: var(--shadow-card); }
+    .why-img:first-child { transform: translateY(2rem); }
+    .why-img img { width: 100%; height: 100%; object-fit: cover; }
+    .why-img-placeholder { width: 100%; height: 100%; background: var(--surface-container); display: flex; align-items: center; justify-content: center; }
+    .why-img-placeholder .material-symbols-outlined { font-size: 3rem; color: var(--outline-variant); }
+
+    /* Blogs */
+    .blogs-section { padding: 6rem 2rem; background: var(--surface-container-low); }
+    .blogs-inner { max-width: 1440px; margin: 0 auto; }
+    .blogs-slider { 
+      display: flex; gap: 2rem; overflow-x: auto; scroll-snap-type: x mandatory; 
+      padding-bottom: 2rem; scrollbar-width: none; 
+    }
+    .blogs-slider::-webkit-scrollbar { display: none; }
+    .blog-card { 
+      flex: 0 0 400px; scroll-snap-align: start; 
+      position: relative; height: 480px; border-radius: var(--radius-lg); 
+      overflow: hidden; box-shadow: 0 24px 48px rgba(27,28,28,0.15); 
+      cursor: pointer;
+    }
+    @media (max-width: 768px) { .blog-card { flex: 0 0 85vw; } }
+    .blog-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease; }
+    .blog-card:hover .blog-img { transform: scale(1.08); }
+    .blog-img-placeholder { position: absolute; inset: 0; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%); display: flex; align-items: center; justify-content: center; }
+    .blog-img-placeholder .material-symbols-outlined { font-size: 5rem; color: rgba(255,255,255,0.2); }
+    .blog-overlay { position: absolute; inset: 0; }
+    .blog-gradient { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.3) 50%, transparent 100%); }
+    .blog-content { position: absolute; bottom: 0; left: 0; right: 0; padding: 2.5rem; z-index: 1; }
+    .blog-title { font-family: 'Manrope',sans-serif; font-weight: 800; font-size: 1.5rem; color: #fff; margin-bottom: 0.75rem; line-height:1.2; }
+    .blog-desc { color: rgba(255,255,255,0.8); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.25rem; }
+    .blog-link { display: inline-flex; align-items: center; gap: 0.375rem; color: #fff; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; transition: gap var(--transition); }
+    .blog-card:hover .blog-link { gap: 0.625rem; }
+
+    /* Comparison */
+    .comparison-section { padding: 7rem 2rem; background: var(--surface); }
+    .comparison-inner { max-width: 1200px; margin: 0 auto; }
+    .comparison-header { text-align: center; margin-bottom: 3.5rem; }
+    .comparison-header h2 { color: var(--primary); margin-bottom: 0.75rem; }
+    .comparison-header p { color: var(--on-surface-variant); }
+    .comparison-table-wrap { border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-ambient); border: 1px solid var(--surface-container-low); }
+    .comparison-table { width: 100%; border-collapse: collapse; background: var(--surface-container-lowest); }
+    .comparison-table thead tr { background: var(--primary); color: #fff; }
+    .comparison-table th { padding: 1.5rem 2rem; font-family: 'Manrope',sans-serif; font-weight: 800; text-align: left; }
+    .comparison-table th:not(:first-child) { opacity: 0.85; }
+    .comparison-table tbody tr { border-bottom: 1px solid var(--surface-container-low); }
+    .comparison-table tbody tr:last-child { border-bottom: none; }
+    .comparison-table tbody tr:hover td { background: var(--surface-container-low); }
+    .comp-feature { padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary); }
+    .comp-imagenia { padding: 1.5rem 2rem; color: var(--on-surface); font-weight: 500; display: flex; align-items: flex-start; gap: 0.5rem; }
+    .comp-check { font-size: 1.1rem; color: var(--secondary); flex-shrink: 0; margin-top: 1px; }
+    .comp-trad { padding: 1.5rem 2rem; color: var(--on-surface-variant); font-size: 0.9rem; }
+
+    /* Final CTA */
+    .impacto-cta { padding: 6rem 2rem; }
+    .impacto-cta-inner { max-width: 1440px; margin: 0 auto; }
+    .impacto-cta-box {
+      background: var(--primary); border-radius: var(--radius-lg);
+      padding: 5rem; position: relative; overflow: hidden;
+      display: grid; grid-template-columns: 1fr auto; gap: 4rem; align-items: center;
+    }
+    @media (max-width: 900px) { .impacto-cta-box { grid-template-columns: 1fr; padding: 3rem; } }
+    .impacto-cta-box::before {
+      content: ''; position: absolute; inset: 0; opacity: 0.06;
+      background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0);
+      background-size: 40px 40px; pointer-events: none;
+    }
+    .impacto-cta-text { position: relative; z-index: 1; }
+    .impacto-cta-text h2 { color: #fff; margin-bottom: 1rem; font-size: clamp(1.75rem, 4vw, 3rem); }
+    .impacto-cta-text p { color: rgba(255,255,255,0.7); font-size: 1.05rem; line-height: 1.7; }
+    .impacto-cta-form-wrap {
+      background: var(--surface-container-lowest); border-radius: var(--radius-md);
+      padding: 2.5rem; box-shadow: 0 32px 64px rgba(27,28,28,0.25);
+      width: 380px; flex-shrink: 0; position: relative; z-index: 1;
+    }
+    @media (max-width: 900px) { .impacto-cta-form-wrap { width: 100%; } }
+    .impacto-cta-form-wrap h3 { font-family: 'Manrope',sans-serif; font-weight: 700; font-size: 1.25rem; color: var(--primary); margin-bottom: 1.5rem; }
+  </style>
+</head>
+<body>
+
+  <div id="nav-placeholder"></div>
+
+  <main>
+
+    <!-- ═══ HERO ═══ -->
+    <section class="impacto-hero">
+      <div class="impacto-hero-inner">
+        <div>
+          <span class="impacto-hero-badge" id="hero-badge">Precisión Sustentable</span>
+          <h1 id="hero-title">Un Impacto que Transforma Espacios</h1>
+          <p id="hero-text"></p>
+          <div style="display:flex;gap:1rem;flex-wrap:wrap">
+            <a href="/contacto.html" class="btn btn-primary" id="hero-cta-primary">Solicitar Asesoría</a>
+            <a href="/catalogos.html" class="btn btn-secondary" id="hero-cta-secondary">Ver Catálogo</a>
+          </div>
+        </div>
+        <div class="impacto-hero-img-wrap">
+          <div class="impacto-hero-img">
+            <img id="hero-image" src="" alt="IMAGENIA — Impacto" style="display:none">
+            <div class="impacto-hero-img-placeholder" id="hero-img-placeholder">
+              <span class="material-symbols-outlined">eco</span>
+            </div>
+          </div>
+          <div class="impacto-hero-stat">
+            <div class="impacto-hero-stat-val" id="hero-stat-val">2,400</div>
+            <div class="impacto-hero-stat-lbl" id="hero-stat-lbl">Toneladas de plástico reciclado en 2024</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ IMPACT CARDS ═══ -->
+    <section class="impact-cards-section">
+      <div class="impact-cards-inner">
+        <div class="impact-cards-header">
+          <h2 id="impact-cards-title">Engineering Lasting Change</h2>
+          <div class="impact-cards-header-bar"></div>
+        </div>
+        <div class="impact-cards-grid" id="impact-cards">
+          <div class="impact-card skeleton" style="height:220px"></div>
+          <div class="impact-card skeleton" style="height:220px"></div>
+          <div class="impact-card skeleton" style="height:220px"></div>
+          <div class="impact-card skeleton" style="height:220px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ WHY RECYCLED PLASTIC WOOD ═══ -->
+    <section class="why-section">
+      <div class="why-inner">
+        <div class="why-text">
+          <h2 id="why-title">¿Por qué Madera Plástica Reciclada?</h2>
+          <p id="why-text1"></p>
+          <p id="why-text2"></p>
+          <div class="why-metrics">
+            <div>
+              <div class="why-metric-label" id="why-m1-lbl">Vida Útil</div>
+              <div class="why-metric-value" id="why-m1-val">40+ Años</div>
+            </div>
+            <div>
+              <div class="why-metric-label" id="why-m2-lbl">Ahorro Mantenimiento</div>
+              <div class="why-metric-value" id="why-m2-val">-85%</div>
+            </div>
+          </div>
+        </div>
+        <div class="why-images">
+          <div class="why-img">
+            <img id="why-img1" src="" alt="Material reciclado" style="display:none">
+            <div class="why-img-placeholder" id="why-p1"><span class="material-symbols-outlined">texture</span></div>
+          </div>
+          <div class="why-img" style="align-self:start">
+            <img id="why-img2" src="" alt="Fabricación industrial" style="display:none">
+            <div class="why-img-placeholder" id="why-p2"><span class="material-symbols-outlined">factory</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ CONTADOR ═══ -->
+    <section class="counter-section" id="counter-section" aria-label="Contador de impacto">
+      <!-- Rendered by JS -->
+    </section>
+
+    <!-- ═══ BLOGS ═══ -->
+    <section class="blogs-section">
+      <div class="blogs-inner">
+        <div style="margin-bottom:3rem">
+          <span class="label-sm text-secondary">Novedades</span>
+          <h2 style="margin-top:0.5rem;color:var(--primary)">Blog y Noticias</h2>
+        </div>
+        <div class="blogs-slider" id="blogs-slider">
+          <div class="blog-card skeleton"></div>
+          <div class="blog-card skeleton"></div>
+          <div class="blog-card skeleton"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ COMPARACIÓN ═══ -->
+    <section class="comparison-section">
+      <div class="comparison-inner">
+        <div class="comparison-header">
+          <h2 id="comp-title">La Diferencia de Rendimiento</h2>
+          <p id="comp-subtitle"></p>
+        </div>
+        <div class="comparison-table-wrap">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Característica</th>
+                <th id="comp-col1">Madera Plástica Reciclada</th>
+                <th id="comp-col2" style="opacity:0.75">Madera/Metal Tradicional</th>
+              </tr>
+            </thead>
+            <tbody id="comp-tbody">
+              <tr><td colspan="3" style="text-align:center;padding:2rem;color:var(--on-surface-variant)">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ CTA FINAL ═══ -->
+    <section class="impacto-cta">
+      <div class="impacto-cta-inner">
+        <div class="impacto-cta-box">
+          <div class="impacto-cta-text">
+            <h2 id="cta-title">¿Listo para construir un legado sustentable?</h2>
+            <p id="cta-text"></p>
+          </div>
+          <div class="impacto-cta-form-wrap">
+            <h3>Solicitar Asesoría</h3>
+            <form id="cta-form">
+              <div class="form-group">
+                <input type="text" class="form-input" id="cta-nombre" placeholder="Nombre completo" required>
+              </div>
+              <div class="form-group">
+                <input type="email" class="form-input" id="cta-email" placeholder="Correo profesional" required>
+              </div>
+              <div class="form-group">
+                <select class="form-select" id="cta-tipo">
+                  <option value="">Tipo de proyecto</option>
+                  <option>Hotelería</option>
+                  <option>Inmobiliaria</option>
+                  <option>Espacio Público</option>
+                  <option>Residencial</option>
+                  <option>Otro</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary btn-full mt-3" id="cta-submit">Solicitar Asesoría</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+
+  <script type="module" src="/js/impacto.js?v=20260433"></script>
+</body>
+</html>

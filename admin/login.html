@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login — IMAGENIA</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    body { background:var(--primary); display:flex; align-items:center; justify-content:center; min-height:100svh; }
+    .login-card { background:var(--surface-container-lowest); border-radius:var(--radius-lg); padding:3rem; width:100%; max-width:400px; box-shadow:0 32px 80px rgba(27,28,28,0.3); }
+    .login-logo { font-family:'Manrope',sans-serif;font-weight:800;font-size:1.75rem;color:var(--primary);letter-spacing:-0.03em;margin-bottom:0.25rem; }
+    .login-sub { font-size:0.85rem;color:var(--on-surface-variant);margin-bottom:2rem; }
+    .error-msg { background:#fef2f2;color:var(--error);padding:0.75rem 1rem;border-radius:var(--radius-sm);font-size:0.85rem;margin-bottom:1rem;display:none; }
+    .error-msg.show { display:block; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="login-logo">IMAGENIA</div>
+    <div class="login-sub">Panel de administración</div>
+    <div class="error-msg" id="error-msg">Credenciales incorrectas. Verifica tu email y contraseña.</div>
+    <form id="login-form">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="l-email" required autofocus placeholder="admin@imagenia.mx">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <input type="password" class="form-input" id="l-password" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn-primary btn-full mt-3" id="login-btn">Iniciar sesión</button>
+    </form>
+    <p style="text-align:center;margin-top:1.5rem;font-size:0.8rem;color:var(--on-surface-variant)">
+      <a href="/index.html" style="color:var(--secondary)">← Volver al sitio</a>
+    </p>
+  </div>
+  <script type="module">
+    import { signIn, getUser } from '/js/supabase.js';
+    // If already logged in, redirect to admin
+    getUser().then(u => { if (u) window.location.href = '/admin/index.html'; });
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      btn.textContent = 'Verificando...'; btn.disabled = true;
+      const { error } = await signIn(
+        document.getElementById('l-email').value,
+        document.getElementById('l-password').value
+      );
+      if (error) {
+        document.getElementById('error-msg').classList.add('show');
+        btn.textContent = 'Iniciar sesión'; btn.disabled = false;
+      } else {
+        window.location.href = '/admin/index.html';
+      }
+    });
+  </script>
+</body>
+</html>

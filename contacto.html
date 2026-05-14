@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contacto — IMAGENIA</title>
+  <meta name="description" content="Contáctanos para cotizar muebles de exterior premium IMAGENIA para tu proyecto.">
+  <link rel="stylesheet" href="/css/styles.css?v=1.1">
+  <style>
+    .contact-layout {
+      display: grid;
+      grid-template-columns: 1fr 480px;
+      gap: 4rem;
+      align-items: flex-start;
+    }
+
+    @media(max-width:900px) {
+      .contact-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .contact-info-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--surface-container-high);
+    }
+
+    .contact-info-item:last-child {
+      border-bottom: none;
+    }
+
+    .contact-icon {
+      width: 3rem;
+      height: 3rem;
+      background: var(--secondary-container);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .contact-icon .material-symbols-outlined {
+      color: var(--on-secondary-container);
+      font-size: 1.25rem;
+    }
+
+    .contact-info-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--secondary);
+      margin-bottom: 0.25rem;
+    }
+
+    .contact-info-value {
+      font-size: 0.95rem;
+      color: var(--on-surface);
+      font-weight: 500;
+    }
+
+    .contact-info-value a {
+      color: inherit;
+      transition: color var(--transition);
+    }
+
+    .contact-info-value a:hover {
+      color: var(--primary);
+    }
+
+    .form-card {
+      background: var(--surface-container-lowest);
+      padding: 2.5rem;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-ambient);
+    }
+
+    .form-card h3 {
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .form-card p {
+      color: var(--on-surface-variant);
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media(max-width:500px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .success-state {
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .success-state .material-symbols-outlined {
+      font-size: 4rem;
+      color: var(--secondary);
+      display: block;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="nav-placeholder"></div>
+  <main>
+    <div class="page-header" id="contact-header">
+      <div class="container">
+        <span class="label-sm text-secondary" id="contact-label">Comunícate con nosotros</span>
+        <h1 id="contact-title">Contacto</h1>
+        <p id="contact-desc">Estamos listos para asesorarte en tu próximo proyecto.</p>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="container">
+        <div class="contact-layout">
+          <!-- Info -->
+          <div>
+            <span class="label-sm text-secondary">Información</span>
+            <h2 class="text-primary mt-1 mb-4">Hablemos de tu proyecto</h2>
+
+            <div id="contact-info">
+              <div class="contact-info-item">
+                <div class="contact-icon"><span class="material-symbols-outlined">mail</span></div>
+                <div>
+                  <div class="contact-info-label">Email</div>
+                  <div class="contact-info-value"><a href="mailto:" id="info-email">—</a></div>
+                </div>
+              </div>
+              <div class="contact-info-item">
+                <div class="contact-icon"><span class="material-symbols-outlined">phone</span></div>
+                <div>
+                  <div class="contact-info-label">Teléfono</div>
+                  <div class="contact-info-value"><a href="tel:" id="info-phone">—</a></div>
+                </div>
+              </div>
+              <div class="contact-info-item">
+                <div class="contact-icon"><span class="material-symbols-outlined">share</span></div>
+                <div>
+                  <div class="contact-info-label">Redes Sociales</div>
+                  <div class="contact-info-value" id="info-social" style="display:flex; flex-wrap:wrap; gap:0.75rem; margin-top:0.5rem;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form -->
+          <div class="form-card" id="cotizacion">
+            <h3>Solicitar cotización</h3>
+            <p>Completa el formulario y te contactamos en menos de 24 horas.</p>
+            <form id="contact-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Nombre *</label>
+                  <input type="text" class="form-input" id="f-nombre" required placeholder="Tu nombre">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Empresa</label>
+                  <input type="text" class="form-input" id="f-empresa" placeholder="Tu empresa">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Email *</label>
+                  <input type="email" class="form-input" id="f-email" required placeholder="correo@empresa.com">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Teléfono</label>
+                  <input type="tel" class="form-input" id="f-tel" placeholder="+52 55 1234 5678">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Producto de interés</label>
+                <input type="text" class="form-input" id="f-producto" placeholder="Ej: Silla Nero, Sombrilla Dubai...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Comentarios</label>
+                <textarea class="form-textarea" id="f-comentarios"
+                  placeholder="Cuéntanos sobre tu proyecto, cantidad, espacio..."></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary btn-full mt-2" id="contact-btn">Enviar mensaje</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div id="footer-placeholder"></div>
+  <script type="module" src="/js/contacto.js?v=1.1"></script>
+</body>
+
+</html>
