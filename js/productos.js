@@ -144,7 +144,12 @@ function renderCard(p) {
       ${p.category_name ? `<div class="card-tag">${p.category_name}</div>` : ''}
       <div class="card-title">${p.name}</div>
       <div class="card-tags">${tagPills}</div>
-      <button class="btn btn-primary btn-sm btn-full mt-3" onclick="event.stopPropagation();cotizar('${encodeURIComponent(p.name)}', '${encodeURIComponent(p.sku || '')}')">Cotizar</button>
+      <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+        <button class="btn btn-primary btn-sm" style="flex:1;" onclick="event.stopPropagation();cotizar('${encodeURIComponent(p.name)}', '${encodeURIComponent(p.sku || '')}')">Cotizar</button>
+        <button class="btn btn-secondary btn-sm" style="padding:0 0.75rem; border-color:var(--outline-variant); background:var(--surface-container-low);" title="Añadir a la lista de cotización" onclick="event.stopPropagation();Cart.add('${(p.name || '').replace(/'/g, "\\'")}', '${p.sku || ''}')">
+          <span class="material-symbols-outlined" style="font-size:1.2rem;">add_shopping_cart</span>
+        </button>
+      </div>
     </div>
   </div>`;
 }
@@ -254,7 +259,11 @@ window.openQuickView = function(p) {
   if (waBtn) {
     waBtn.href = `https://wa.me/${num}?text=${encodeURIComponent(message)}`;
     waBtn.target = '_blank';
-    waBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size:1.2rem">chat</span> Solicitar información por WhatsApp`;
+    waBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size:1.2rem">chat</span> Solicitar información`;
+  }
+  const addCartBtn = document.getElementById('qv-add-cart');
+  if (addCartBtn) {
+    addCartBtn.onclick = () => Cart.add(p.name, p.sku);
   }
 
   document.getElementById('qv-modal').classList.add('open');

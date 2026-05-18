@@ -118,7 +118,12 @@
             <div id="qv-sku" style="font-family:'Manrope',sans-serif; font-weight:700; font-size:0.8rem; color:var(--primary); margin-bottom:0.5rem; display:none;"></div>
             <p id="qv-desc" class="text-muted" style="font-size:0.9rem;margin-bottom:1.5rem"></p>
             <div id="qv-tags" class="card-tags mb-3"></div>
-            <a id="qv-cotizar" href="/contacto.html" class="btn btn-primary btn-full">Cotizar este producto</a>
+            <div style="display:flex; gap:0.5rem;">
+              <a id="qv-cotizar" href="/contacto.html" class="btn btn-primary" style="flex:1;">Cotizar este producto</a>
+              <button id="qv-add-cart" class="btn btn-secondary" title="Añadir a la lista de cotización" style="padding:0 1rem; border-color:var(--outline-variant); background:var(--surface-container-low);">
+                <span class="material-symbols-outlined">add_shopping_cart</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

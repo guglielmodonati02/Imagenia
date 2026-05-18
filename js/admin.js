@@ -83,17 +83,44 @@ window.saveCounterSettings = async function() {
 
 // ── Settings ─────────────────────────────────────────────────
 async function loadSettings() {
+  const quillEditorsToInit = [];
   const { data: dbRows } = await supabase.from('site_settings').select('*').order('key');
   
   let rows = (dbRows || []).filter(r => !r.key.startsWith('footer_ig_embed_'));
   if (!rows.some(r => r.key === 'footer_clients_title')) {
     rows.push({ key: 'footer_clients_title', label: 'Título de la sección Proyectos y Clientes', value: 'Proyectos y Clientes', value_type: 'text' });
   }
+  if (!rows.some(r => r.key === 'home_about_image_url')) {
+    rows.push({ key: 'home_about_image_url', label: 'Imagen de Acerca de + Beneficios', value: '', value_type: 'url' });
+  }
+  if (!rows.some(r => r.key === 'footer_privacy_text')) {
+    rows.push({ key: 'footer_privacy_text', label: 'Texto de Aviso de Privacidad (HTML)', value: '<p>Aviso de privacidad (reemplaza este texto)...</p>', value_type: 'html' });
+  }
+  if (!rows.some(r => r.key === 'footer_terms_text')) {
+    rows.push({ key: 'footer_terms_text', label: 'Texto de Términos y Condiciones (HTML)', value: '<p>Términos y condiciones (reemplaza este texto)...</p>', value_type: 'html' });
+  }
+  if (!rows.some(r => r.key === 'impacto_hero_badge')) {
+    rows.push({ key: 'impacto_hero_badge', label: 'Badge Hero Impacto', value: 'Precisión Sustentable', value_type: 'text' });
+  }
+  if (!rows.some(r => r.key === 'impact_section_title')) {
+    rows.push({ key: 'impact_section_title', label: 'Título de Sección Impacto', value: 'Nuestro Impacto', value_type: 'text' });
+  }
+  if (!rows.some(r => r.key === 'promo_banner_text')) {
+    rows.push({ key: 'promo_banner_text', label: 'Texto del Banner Promocional', value: 'Pregunta por nuestros proyectos y soluciones para tu empresa', value_type: 'text' });
+  }
+  if (!rows.some(r => r.key === 'home_categories_badge')) {
+    rows.push({ key: 'home_categories_badge', label: 'Badge de Categorías (Inicio)', value: 'Catálogo', value_type: 'text' });
+  }
+  if (!rows.some(r => r.key === 'home_categories_title')) {
+    rows.push({ key: 'home_categories_title', label: 'Título de Categorías (Inicio)', value: 'Nuestras <span style="color:var(--secondary)">Categorías</span>', value_type: 'text' });
+  }
 
   const groups = {};
   const pageNames = { 
     'home': 'Página: Inicio', 
     'impacto': 'Página: Impacto', 
+    'impact': 'Página: Impacto (Secciones)',
+    'promo': 'Banner Promocional',
     'catalog': 'Página: Catálogos/Productos', 
     'contact': 'Página: Contacto',
     'whatsapp': 'Configuración WhatsApp',
@@ -104,6 +131,9 @@ async function loadSettings() {
   rows.forEach(r => {
     if (r.key.startsWith('counter_')) return; 
     if (r.key.toLowerCase().includes('sector')) return;  
+    if (r.key.toLowerCase().includes('impact') && r.key.toLowerCase().includes('card')) return;
+    if (r.label && r.label.includes('Impact: Card')) return;
+    if (r.label && r.label.includes('Impact: Título')) return;
     
     let prefix = r.key.split('_')[0];
     if (!pageNames[prefix]) return; // Hides anything not in the map (like global_)
@@ -171,6 +201,22 @@ async function loadSettings() {
             <input type="text" class="setting-input" data-key="${r.key}" value="${(r.value||'').replace(/"/g, '&quot;')}" placeholder="https://..." oninput="updatePreview(this, '${r.key}')">
           </div>
         `;
+      } else if (r.value_type === 'html') {
+        quillEditorsToInit.push({ key: r.key, value: r.value || '' });
+        inputHtml = `
+          <div style="background:#fff; color:#000; border-radius:4px; margin-bottom:0.5rem;">
+            <div id="quill-toolbar-${r.key}" style="border: 1px solid var(--outline-variant); border-bottom: none; border-radius: 4px 4px 0 0; background: #f8f9fa;">
+              <span class="ql-formats"><select class="ql-header"></select></span>
+              <span class="ql-formats"><button class="ql-bold"></button><button class="ql-italic"></button><button class="ql-underline"></button></span>
+              <span class="ql-formats"><button class="ql-list" value="ordered"></button><button class="ql-list" value="bullet"></button></span>
+              <span class="ql-formats"><button class="ql-link"></button></span>
+            </div>
+            <div id="quill-${r.key}" style="height: 300px; border: 1px solid var(--outline-variant); border-radius: 0 0 4px 4px; font-family: 'Manrope', sans-serif;"></div>
+          </div>
+          <textarea id="hidden-${r.key}" class="setting-input" data-key="${r.key}" style="display:none;"></textarea>
+        `;
+      } else if (r.value_type === 'textarea') {
+        inputHtml = `<textarea class="setting-input" data-key="${r.key}" rows="8" style="resize:vertical; font-family:monospace; font-size:0.85rem; line-height:1.4; padding:0.5rem; border:1px solid var(--outline-variant); border-radius:4px; width:100%; box-sizing:border-box;">${(r.value||'').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>`;
       } else {
         inputHtml = `<input type="text" class="setting-input" data-key="${r.key}" value="${(r.value||'').replace(/"/g, '&quot;')}" placeholder="${r.label||''}" ${r.value_type==='url'?`oninput="updatePreview(this, '${r.key}')"`:''}>`;
       }
@@ -194,6 +240,19 @@ async function loadSettings() {
   if (container) {
     container.innerHTML = html;
   }
+  
+  quillEditorsToInit.forEach(item => {
+    const q = new Quill('#quill-' + item.key, {
+      theme: 'snow',
+      modules: { toolbar: '#quill-toolbar-' + item.key }
+    });
+    q.root.innerHTML = item.value;
+    const hidden = document.getElementById('hidden-' + item.key);
+    hidden.value = item.value;
+    q.on('text-change', function() {
+      hidden.value = q.root.innerHTML;
+    });
+  });
 }
 
 window.generatePreviewHtml = function(url) {

@@ -33,13 +33,27 @@
 
     <!-- ═══ ACERCA DE + BENEFICIOS ═══ -->
     <section class="section">
-      <div class="container">
-        <div class="about-layout">
-          <div class="about-text">
-            <h2 id="about-title">Soluciones que Transforman Espacios</h2>
-            <p id="about-text" style="margin-top:1rem"></p>
+      <div class="container" style="display: flex; flex-direction: column; gap: 2.5rem;">
+        
+        <!-- 1 y 2: Columna Superior (Título y Subtítulo) -->
+        <div class="about-header" style="text-align: center;">
+          <h2 id="about-title">Soluciones que Transforman Espacios</h2>
+          <p id="about-text" style="margin-top:1rem"></p>
+        </div>
+
+        <!-- 3: Row (Fila que contiene Imagen + Beneficios) -->
+        <div class="about-content-row" style="display: flex; flex-wrap: wrap; gap: 3rem; align-items: center;">
+          
+          <!-- Imagen (Mitad Izquierda) -->
+          <div class="about-image-container" style="flex: 1 1 400px;" id="about-image-wrap">
+            <!-- La imagen se cargará dinámicamente -->
+            <div class="cat-img-card-placeholder" style="border-radius: 12px; min-height: 300px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.05);">
+              <span class="material-symbols-outlined" style="font-size: 3rem; color: var(--primary);">image</span>
+            </div>
           </div>
-          <div class="about-benefits" id="about-benefits">
+
+          <!-- 3.1: Columna de Elenco Beneficios (Mitad Derecha) -->
+          <div class="about-benefits" id="about-benefits" style="flex: 1 1 400px; display: flex; flex-direction: column; gap: 1.5rem;">
             <div class="benefit-row">
               <span class="material-symbols-outlined benefit-icon">shield</span>
               <div>
@@ -69,16 +83,18 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
+
+        </div> <!-- /about-content-row -->
+        
+      </div> <!-- /container -->
     </section>
 
     <!-- ═══ NUESTRAS CATEGORÍAS ═══ -->
     <section class="section section-alt">
       <div class="container">
         <div style="text-align:center;margin-bottom:3rem">
-          <span class="label-sm text-secondary">Catálogo</span>
-          <h2 style="margin-top:0.5rem;color:var(--primary)">Nuestras <span style="color:var(--secondary)">Categorías</span></h2>
+          <span class="label-sm text-secondary" id="home-categories-badge">Catálogo</span>
+          <h2 style="margin-top:0.5rem;color:var(--primary)" id="home-categories-title">Nuestras <span style="color:var(--secondary)">Categorías</span></h2>
         </div>
         <div class="cat-img-grid" id="category-grid">
           <div class="cat-img-card skeleton"></div>

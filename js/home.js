@@ -15,7 +15,7 @@ async function init() {
   await Promise.all([
     loadSlider(),
     loadAbout(settings),
-    loadCategories(),
+    loadCategories(settings),
     loadProducts('bestseller'),
     loadPromoBanner(settings),
     loadQuoteForm(settings),
@@ -125,12 +125,24 @@ window.sliderGoTo = sliderGoTo;
 function loadAbout(settings) {
   const title = document.getElementById('about-title');
   const text = document.getElementById('about-text');
+  const wrap = document.getElementById('about-image-wrap');
+  
   if (title && settings.about_title) title.textContent = settings.about_title;
   if (text && settings.about_text) text.textContent = settings.about_text;
+  
+  if (wrap && settings.home_about_image_url) {
+    wrap.innerHTML = `<img src="${settings.home_about_image_url}" alt="Acerca de IMAGENIA" loading="lazy" style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover;">`;
+  }
 }
 
 /* ── Categories ───────────────────────────────────────────────── */
-async function loadCategories() {
+async function loadCategories(settings) {
+  if (settings) {
+    const badge = document.getElementById('home-categories-badge');
+    const title = document.getElementById('home-categories-title');
+    if (badge && settings.home_categories_badge) badge.textContent = settings.home_categories_badge;
+    if (title && settings.home_categories_title) title.innerHTML = settings.home_categories_title;
+  }
   const { data } = await getCategories();
   const grid = document.getElementById('category-grid');
   if (!data || !data.length) {

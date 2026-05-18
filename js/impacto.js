@@ -8,7 +8,7 @@ async function init() {
 
   await Promise.all([
     loadHero(settings),
-    loadCards(),
+    loadCards(settings),
     loadWhySection(settings),
     loadBlogs(),
     loadComparison(settings),
@@ -89,7 +89,11 @@ function loadHero(s) {
 }
 
 /* ── Impact Cards ──────────────────────────────────────────── */
-async function loadCards() {
+async function loadCards(settings) {
+  if (settings && settings.impact_section_title) {
+    const titleEl = document.getElementById('impact-cards-title');
+    if (titleEl) titleEl.textContent = settings.impact_section_title;
+  }
   const { data } = await getImpactStats();
   const container = document.getElementById('impact-cards');
   if (!container) return;
