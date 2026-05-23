@@ -142,9 +142,51 @@
     .comparison-table tbody tr:last-child { border-bottom: none; }
     .comparison-table tbody tr:hover td { background: var(--surface-container-low); }
     .comp-feature { padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary); }
-    .comp-imagenia { padding: 1.5rem 2rem; color: var(--on-surface); font-weight: 500; display: flex; align-items: flex-start; gap: 0.5rem; }
-    .comp-check { font-size: 1.1rem; color: var(--secondary); flex-shrink: 0; margin-top: 1px; }
+    .comp-imagenia { padding: 1.5rem 2rem; color: var(--on-surface); font-weight: 500; }
+    .comp-check { font-size: 1.1rem; color: var(--secondary); flex-shrink: 0; margin-top: 2px; }
     .comp-trad { padding: 1.5rem 2rem; color: var(--on-surface-variant); font-size: 0.9rem; }
+    .comp-val-wrap { display: flex; align-items: flex-start; gap: 0.5rem; }
+
+    @media (max-width: 768px) {
+      .comparison-table-wrap { border: none; box-shadow: none; background: transparent; overflow: visible; }
+      .comparison-table { display: block; background: transparent; }
+      .comparison-table thead { display: none; }
+      .comparison-table tbody { display: flex; flex-direction: column; gap: 1.5rem; }
+      .comparison-table tbody tr {
+        display: flex; flex-direction: column;
+        background: var(--surface-container-lowest);
+        border: 1px solid var(--surface-container-low);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem; gap: 1rem;
+        box-shadow: var(--shadow-card);
+      }
+      .comparison-table tbody tr:hover td { background: transparent; }
+      .comp-feature {
+        padding: 0 0 0.75rem 0;
+        border-bottom: 1px solid var(--surface-container-low);
+        font-size: 1rem; font-weight: 800; color: var(--primary);
+        letter-spacing: normal; text-transform: none;
+      }
+      .comp-imagenia, .comp-trad {
+        padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; border-radius: var(--radius-md);
+      }
+      .comp-imagenia::before, .comp-trad::before {
+        content: attr(data-label);
+        font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+      }
+      .comp-imagenia {
+        background: rgba(145, 247, 142, 0.12);
+        border: 1px solid rgba(0, 110, 28, 0.2);
+        color: var(--on-surface);
+      }
+      .comp-imagenia::before { color: var(--on-secondary-container); }
+      .comp-trad {
+        background: var(--surface-container-low);
+        border: 1px dashed var(--outline-variant);
+      }
+      .comp-trad::before { color: var(--on-surface-variant); opacity: 0.8; }
+      .comp-val-wrap { font-size: 0.95rem; line-height: 1.5; }
+    }
 
     /* Final CTA */
     .impacto-cta { padding: 6rem 2rem; }

@@ -217,11 +217,17 @@ async function loadComparison(s) {
   tbody.innerHTML = data.map(row => `
     <tr>
       <td class="comp-feature">${row.feature}</td>
-      <td class="comp-imagenia">
-        <span class="material-symbols-outlined comp-check">check_circle</span>
-        ${row.col_imagenia}
+      <td class="comp-imagenia" data-label="${s.impacto_comparison_col1 || 'Madera Plástica Reciclada'}">
+        <div class="comp-val-wrap">
+          <span class="material-symbols-outlined comp-check">check_circle</span>
+          <span>${row.col_imagenia}</span>
+        </div>
       </td>
-      <td class="comp-trad">${row.col_traditional}</td>
+      <td class="comp-trad" data-label="${s.impacto_comparison_col2 || 'Madera/Metal Tradicional'}">
+        <div class="comp-val-wrap">
+          <span>${row.col_traditional}</span>
+        </div>
+      </td>
     </tr>`).join('');
 }
 
