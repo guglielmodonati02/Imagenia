@@ -3,7 +3,15 @@ import { initPage, showToast } from './components.js';
 import { getCatalogs } from './supabase.js';
 
 async function init() {
-  await initPage('Catálogos');
+  const settings = await initPage('Catálogos');
+
+  const headerImg = settings.headers_catalogos || '';
+  const headerEl = document.getElementById('catalogos-header');
+  if (headerEl && headerImg) {
+    headerEl.style.backgroundImage = `url(${headerImg})`;
+    headerEl.classList.add('has-image');
+  }
+
   const { data, error } = await getCatalogs();
   const grid = document.getElementById('catalog-grid');
 

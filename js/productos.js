@@ -14,6 +14,14 @@ let siteSettings = {};
 async function init() {
   siteSettings = await initPage('Productos');
 
+  // Set page header image if configured
+  const headerImg = siteSettings.headers_productos || '';
+  const headerEl = document.getElementById('productos-header');
+  if (headerEl && headerImg) {
+    headerEl.style.backgroundImage = `url(${headerImg})`;
+    headerEl.classList.add('has-image');
+  }
+
   // Check URL params
   const params = new URLSearchParams(window.location.search);
   if (params.get('cat')) currentCategory = params.get('cat');
@@ -33,14 +41,57 @@ async function init() {
 
 function renderCategoryTabs(cats) {
   const tabsEl = document.getElementById('cat-tabs');
-  const todosBtn = tabsEl.querySelector('.tab-btn');
-  todosBtn.classList.toggle('active', currentCategory === 'todos');
-  cats.filter(c => c.slug !== 'todos').forEach(c => {
-    const btn = document.createElement('button');
-    btn.className = 'tab-btn' + (currentCategory === c.slug ? ' active' : '');
-    btn.innerHTML = `<span class="material-symbols-outlined">${c.icon_name || 'category'}</span> ${c.name}`;
-    btn.onclick = () => setCategory(c.slug, btn);
-    tabsEl.appendChild(btn);
+  if (!tabsEl) return;
+  tabsEl.innerHTML = '';
+
+  const activeCats = cats.filter(c => c.slug !== 'todos');
+
+  // Build the mosaic images for the "Todos" card
+  const featuredForMosaic = activeCats.slice(0, 4);
+  const mosaicCells = featuredForMosaic.map(c => {
+    if (c.image_url) {
+      return `<div class="cat-mosaic-cell"><img src="${c.image_url}" alt="${c.name}" loading="lazy"></div>`;
+    } else {
+      return `<div class="cat-mosaic-cell"><div style="width:100%;height:100%;background:var(--primary-container);display:flex;align-items:center;justify-content:center;"><span class="material-symbols-outlined" style="color:var(--primary);font-size:1.5rem;">${c.icon_name || 'category'}</span></div></div>`;
+    }
+  });
+
+  while (mosaicCells.length < 4) {
+    mosaicCells.push(`<div class="cat-mosaic-cell"><div style="width:100%;height:100%;background:var(--surface-container-high);"></div></div>`);
+  }
+
+  // Create the "Todos" card
+  const todosCard = document.createElement('div');
+  todosCard.className = 'cat-img-card' + (currentCategory === 'todos' ? ' active' : '');
+  todosCard.setAttribute('role', 'button');
+  todosCard.onclick = () => setCategory('todos', todosCard);
+  todosCard.innerHTML = `
+    <div class="cat-mosaic-grid">
+      ${mosaicCells.join('')}
+    </div>
+    <div class="cat-img-card-overlay">
+      <div class="cat-img-card-name">Todos</div>
+      <div class="cat-img-card-link">Ver todo →</div>
+    </div>
+  `;
+  tabsEl.appendChild(todosCard);
+
+  // Render the remaining category cards
+  activeCats.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'cat-img-card' + (currentCategory === c.slug ? ' active' : '');
+    card.setAttribute('role', 'button');
+    card.onclick = () => setCategory(c.slug, card);
+    card.innerHTML = `
+      ${c.image_url
+        ? `<img src="${c.image_url}" alt="${c.name}" loading="lazy">`
+        : `<div class="cat-img-card-placeholder"><span class="material-symbols-outlined">${c.icon_name || 'category'}</span></div>`}
+      <div class="cat-img-card-overlay">
+        <div class="cat-img-card-name">${c.name}</div>
+        <div class="cat-img-card-link">Seleccionar →</div>
+      </div>
+    `;
+    tabsEl.appendChild(card);
   });
 }
 
@@ -129,8 +180,6 @@ async function loadProducts() {
 }
 
 function renderCard(p) {
-  const tags = Array.isArray(p.tags) ? p.tags : [];
-  const tagPills = tags.slice(0,4).map(t => `<span class="tag-pill">${t.tag_name}</span>`).join('');
   return `
   <div class="card" onclick="openQuickView(${JSON.stringify(p).replace(/"/g,'&quot;')})" style="cursor:pointer">
     <div class="card-image">
@@ -141,9 +190,7 @@ function renderCard(p) {
       </div>
     </div>
     <div class="card-body">
-      ${p.category_name ? `<div class="card-tag">${p.category_name}</div>` : ''}
       <div class="card-title">${p.name}</div>
-      <div class="card-tags">${tagPills}</div>
       <div style="display:flex; gap:0.5rem; margin-top:1rem;">
         <button class="btn btn-primary btn-sm" style="flex:1;" onclick="event.stopPropagation();cotizar('${encodeURIComponent(p.name)}', '${encodeURIComponent(p.sku || '')}')">Cotizar</button>
         <button class="btn btn-secondary btn-sm" style="padding:0 0.75rem; border-color:var(--outline-variant); background:var(--surface-container-low);" title="Añadir a la lista de cotización" onclick="event.stopPropagation();Cart.add('${(p.name || '').replace(/'/g, "\\'")}', '${p.sku || ''}')">
@@ -190,7 +237,7 @@ function findTagName(id) {
 
 // ── Global functions ─────────────────────────────────────────
 window.setCategory = function(slug, el) {
-  document.querySelectorAll('#cat-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#cat-tabs .cat-img-card').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   currentCategory = slug;
   currentPage = 1;
@@ -249,7 +296,47 @@ window.openQuickView = function(p) {
   }
   document.getElementById('qv-desc').textContent = p.description || 'Producto de exterior premium IMAGENIA.';
   document.getElementById('qv-tags').innerHTML = tags.map(t => `<span class="tag-pill">${t.tag_name}</span>`).join('');
-  document.getElementById('qv-image').innerHTML = imgWithFallback(p.image_url, p.name);
+  
+  // Gallery construction (limit to 10)
+  const galleryImages = [];
+  if (p.image_url) {
+    galleryImages.push(p.image_url);
+  }
+  if (Array.isArray(p.gallery_urls)) {
+    p.gallery_urls.forEach(url => {
+      if (url && !galleryImages.includes(url)) {
+        galleryImages.push(url);
+      }
+    });
+  }
+  const finalGallery = galleryImages.slice(0, 10);
+  
+  // Render main image
+  const mainImgUrl = finalGallery[0] || '';
+  const qvImageEl = document.getElementById('qv-image');
+  if (qvImageEl) {
+    if (mainImgUrl) {
+      qvImageEl.innerHTML = `<img id="qv-main-img" src="${mainImgUrl}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<div class=\\'card-placeholder\\'><span class=\\'material-symbols-outlined\\'>image_not_supported</span></div>'">`;
+      qvImageEl.style.cursor = 'zoom-in';
+    } else {
+      qvImageEl.innerHTML = `<div class="card-placeholder"><span class="material-symbols-outlined">chair</span></div>`;
+      qvImageEl.style.cursor = 'default';
+    }
+  }
+
+  // Render thumbnails
+  const galleryEl = document.getElementById('qv-gallery');
+  if (galleryEl) {
+    if (finalGallery.length > 1) {
+      galleryEl.style.display = 'flex';
+      galleryEl.innerHTML = finalGallery.map((url, idx) => `
+        <img class="qv-thumb${idx === 0 ? ' active' : ''}" src="${url}" alt="${p.name} ${idx + 1}" style="width:50px;height:50px;object-fit:cover;" onclick="changeQuickViewImage('${url}', this)">
+      `).join('');
+    } else {
+      galleryEl.style.display = 'none';
+      galleryEl.innerHTML = '';
+    }
+  }
   
   let num = siteSettings?.whatsapp_number || siteSettings?.contact_whatsapp || '5219980000000';
   num = num.replace(/\D/g, '');
@@ -268,6 +355,53 @@ window.openQuickView = function(p) {
 
   document.getElementById('qv-modal').classList.add('open');
 };
+
+window.changeQuickViewImage = function(url, thumbEl) {
+  const mainImg = document.getElementById('qv-main-img');
+  if (!mainImg) return;
+  
+  mainImg.style.transition = 'opacity 0.15s ease-in-out';
+  mainImg.style.opacity = '0';
+  
+  setTimeout(() => {
+    mainImg.src = url;
+    mainImg.onload = () => {
+      mainImg.style.opacity = '1';
+    };
+    // Fallback if onload doesn't trigger
+    setTimeout(() => {
+      mainImg.style.opacity = '1';
+    }, 200);
+  }, 150);
+  
+  // Update border highlight classes on thumbnails
+  const thumbs = document.querySelectorAll('.qv-thumb');
+  thumbs.forEach(t => t.classList.remove('active'));
+  if (thumbEl) thumbEl.classList.add('active');
+};
+
+window.openLightbox = function() {
+  const mainImg = document.getElementById('qv-main-img');
+  if (!mainImg) return; // Don't open if there's no main image
+  
+  const lightboxImg = document.getElementById('lightbox-img');
+  const lightboxModal = document.getElementById('lightbox-modal');
+  
+  if (lightboxImg && lightboxModal) {
+    lightboxImg.src = mainImg.src;
+    lightboxModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+};
+
+window.closeLightbox = function() {
+  const lightboxModal = document.getElementById('lightbox-modal');
+  if (lightboxModal) {
+    lightboxModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+};
+
 window.closeModal = function() { document.getElementById('qv-modal').classList.remove('open'); };
 window.cotizar = function(name, sku = '') {
   const decName = decodeURIComponent(name);

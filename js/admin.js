@@ -3,6 +3,8 @@ import { requireAuth, signOut, supabase, getSettings, setSetting, uploadFile } f
 import { showToast } from '/js/components.js';
 
 let allCategories = [], allTagGroups = [], allTags = [], allProducts = [];
+let currentGalleryUrls = [];
+let draggedIndex = null;
 
 async function init() {
   await requireAuth();
@@ -86,12 +88,23 @@ async function loadSettings() {
   const quillEditorsToInit = [];
   const { data: dbRows } = await supabase.from('site_settings').select('*').order('key');
   
-  let rows = (dbRows || []).filter(r => !r.key.startsWith('footer_ig_embed_'));
+  let rows = (dbRows || []).filter(r => !r.key.startsWith('footer_ig_embed_') && r.key !== 'contact_header_image' && r.key !== 'about_title' && r.key !== 'about_text');
   if (!rows.some(r => r.key === 'footer_clients_title')) {
     rows.push({ key: 'footer_clients_title', label: 'Título de la sección Proyectos y Clientes', value: 'Proyectos y Clientes', value_type: 'text' });
   }
+  
+  // Asegurar existencia y migración de las claves de la sección Acerca de
+  const oldAboutTitle = (dbRows || []).find(r => r.key === 'about_title');
+  const oldAboutText = (dbRows || []).find(r => r.key === 'about_text');
+  
+  if (!rows.some(r => r.key === 'home_about_title')) {
+    rows.push({ key: 'home_about_title', label: 'Título de la sección Acerca de', value: oldAboutTitle ? oldAboutTitle.value : 'Soluciones que Transforman Espacios', value_type: 'text' });
+  }
+  if (!rows.some(r => r.key === 'home_about_text')) {
+    rows.push({ key: 'home_about_text', label: 'Texto de la sección Acerca de', value: oldAboutText ? oldAboutText.value : '', value_type: 'textarea' });
+  }
   if (!rows.some(r => r.key === 'home_about_image_url')) {
-    rows.push({ key: 'home_about_image_url', label: 'Imagen de Acerca de + Beneficios', value: '', value_type: 'url' });
+    rows.push({ key: 'home_about_image_url', label: 'Imagen o Video de Acerca de + Beneficios', value: '', value_type: 'url' });
   }
   if (!rows.some(r => r.key === 'footer_privacy_text')) {
     rows.push({ key: 'footer_privacy_text', label: 'Texto de Aviso de Privacidad (HTML)', value: '<p>Aviso de privacidad (reemplaza este texto)...</p>', value_type: 'html' });
@@ -115,9 +128,33 @@ async function loadSettings() {
     rows.push({ key: 'home_categories_title', label: 'Título de Categorías (Inicio)', value: 'Nuestras <span style="color:var(--secondary)">Categorías</span>', value_type: 'text' });
   }
 
+  // Asegurar existencia de las claves de cabeceras en el panel
+  const oldContactHeader = (dbRows || []).find(r => r.key === 'contact_header_image');
+  if (!rows.some(r => r.key === 'headers_contacto')) {
+    rows.push({ key: 'headers_contacto', label: 'Imagen de cabecera — Contacto', value: oldContactHeader ? oldContactHeader.value : '', value_type: 'url' });
+  }
+  if (!rows.some(r => r.key === 'headers_catalogos')) {
+    rows.push({ key: 'headers_catalogos', label: 'Imagen de cabecera — Catálogos', value: '', value_type: 'url' });
+  }
+  if (!rows.some(r => r.key === 'headers_productos')) {
+    rows.push({ key: 'headers_productos', label: 'Imagen de cabecera — Productos', value: '', value_type: 'url' });
+  }
+
+  // Asegurar que tipos de valor y etiquetas críticas sean las correctas (incluso si vienen de la BD)
+  rows.forEach(r => {
+    if (r.key === 'home_about_image_url') {
+      r.value_type = 'url';
+      r.label = 'Imagen o Video de Acerca de + Beneficios';
+    }
+    if (r.key.startsWith('headers_')) {
+      r.value_type = 'url';
+    }
+  });
+
   const groups = {};
   const pageNames = { 
     'home': 'Página: Inicio', 
+    'headers': 'Cabeceras de Páginas',
     'impacto': 'Página: Impacto', 
     'impact': 'Página: Impacto (Secciones)',
     'promo': 'Banner Promocional',
@@ -400,6 +437,9 @@ window.openProductModal = async function(p = null) {
       </div>
     </div>`).join('');
 
+  currentGalleryUrls = Array.isArray(p?.gallery_urls) ? [...p.gallery_urls] : [];
+  renderAdminGallery();
+
   modal.classList.add('open');
 };
 
@@ -414,6 +454,94 @@ window.uploadProductImage = async function(input) {
   showToast('Imagen subida');
 };
 
+window.renderAdminGallery = function() {
+  const container = document.getElementById('pm-gallery-container');
+  if (!container) return;
+  container.innerHTML = currentGalleryUrls.map((url, index) => `
+    <div class="pm-gallery-item"
+         draggable="true"
+         ondragstart="dragStart(event, ${index})"
+         ondragover="dragOver(event, this)"
+         ondragenter="dragEnter(event, this)"
+         ondragleave="dragLeave(event, this)"
+         ondrop="dragDrop(event, ${index})"
+         ondragend="dragEnd()"
+         style="position:relative;width:60px;height:60px;border:1px solid var(--outline-variant);border-radius:var(--radius-sm);overflow:hidden;background:var(--surface-container-low)">
+      <img src="${url}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;">
+      <button type="button" onclick="removeGalleryImage(${index})" style="position:absolute;top:2px;right:2px;background:rgba(255,255,255,0.8);border:none;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--error);padding:0;z-index:10;">
+        <span class="material-symbols-outlined" style="font-size:0.75rem;font-weight:bold">close</span>
+      </button>
+    </div>
+  `).join('');
+};
+
+window.dragStart = function(event, index) {
+  draggedIndex = index;
+  event.dataTransfer.effectAllowed = 'move';
+};
+
+window.dragOver = function(event, el) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+};
+
+window.dragEnter = function(event, el) {
+  event.preventDefault();
+  el.classList.add('drag-over');
+};
+
+window.dragLeave = function(event, el) {
+  el.classList.remove('drag-over');
+};
+
+window.dragDrop = function(event, index) {
+  event.preventDefault();
+  if (draggedIndex === null || draggedIndex === index) return;
+  
+  const movedItem = currentGalleryUrls.splice(draggedIndex, 1)[0];
+  currentGalleryUrls.splice(index, 0, movedItem);
+  
+  draggedIndex = null;
+  renderAdminGallery();
+};
+
+window.dragEnd = function() {
+  draggedIndex = null;
+  document.querySelectorAll('.pm-gallery-item').forEach(el => el.classList.remove('drag-over'));
+};
+
+window.removeGalleryImage = function(index) {
+  currentGalleryUrls.splice(index, 1);
+  renderAdminGallery();
+};
+
+window.uploadGalleryImages = async function(input) {
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+  const btn = input.closest('.upload-btn');
+  const originalText = btn.innerHTML;
+  
+  for (const file of files) {
+    if (currentGalleryUrls.length >= 10) {
+      showToast('Límite de 10 imágenes alcanzado', 'warning');
+      break;
+    }
+    btn.innerHTML = 'Subiendo...';
+    const { url, error } = await uploadFile('imagenia-assets', 'products', file);
+    if (error) {
+      showToast('Error al subir imagen de galería', 'error');
+      console.error(error);
+    } else if (url) {
+      currentGalleryUrls.push(url);
+    }
+  }
+  
+  btn.innerHTML = originalText;
+  input.value = ''; // Reset file input
+  renderAdminGallery();
+  showToast('Galería actualizada');
+};
+
 window.saveProduct = async function() {
   const id = document.getElementById('pm-id').value;
   const selectedTagIds = [...document.querySelectorAll('#pm-tags input:checked')].map(cb => cb.value);
@@ -424,6 +552,7 @@ window.saveProduct = async function() {
     category_id: document.getElementById('pm-category').value || null,
     description: document.getElementById('pm-desc').value,
     image_url: document.getElementById('pm-image').value,
+    gallery_urls: currentGalleryUrls,
     sort_order: parseInt(document.getElementById('pm-order').value) || 0,
     is_bestseller: document.getElementById('pm-bestseller').checked,
     is_new: document.getElementById('pm-new').checked,
@@ -475,7 +604,63 @@ async function categories() {
         <button class="btn-icon-sm btn-del" onclick="deleteCat('${c.id}','${c.name}')"><span class="material-symbols-outlined" style="font-size:1rem">delete</span></button>
       </div></td>
     </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--on-surface-variant)">Sin categorías.</td></tr>';
+
+  await populateHomeCategoriesSelectors();
 }
+
+async function populateHomeCategoriesSelectors() {
+  const settings = await getSettings();
+  let featured = [];
+  if (settings.home_featured_categories) {
+    try {
+      featured = JSON.parse(settings.home_featured_categories);
+    } catch (e) {
+      console.error("Error parsing home_featured_categories:", e);
+    }
+  }
+
+  const activeCats = allCategories.filter(c => c.is_active);
+  for (let i = 1; i <= 4; i++) {
+    const select = document.getElementById(`home-cat-pos-${i}`);
+    if (!select) continue;
+
+    const optionsHtml = activeCats.map(c => `
+      <option value="${c.id}" ${featured[i-1] === c.id ? 'selected' : ''}>${c.name}</option>
+    `).join('');
+    
+    select.innerHTML = '<option value="">-- Seleccionar --</option>' + optionsHtml;
+  }
+}
+
+window.saveHomeCategoriesConfig = async function() {
+  const ids = [];
+  const activeCount = allCategories.filter(c => c.is_active).length;
+  for (let i = 1; i <= 4; i++) {
+    const select = document.getElementById(`home-cat-pos-${i}`);
+    if (select && select.value) {
+      ids.push(select.value);
+    }
+  }
+
+  if (ids.length < 4 && activeCount >= 4) {
+    showToast('Debes seleccionar exactamente 4 categorías.', 'warning');
+    return;
+  }
+
+  // Check for duplicates
+  const uniqueIds = new Set(ids);
+  if (uniqueIds.size !== ids.length) {
+    showToast('No puedes seleccionar la misma categoría en múltiples posiciones.', 'error');
+    return;
+  }
+
+  const { error } = await setSetting('home_featured_categories', JSON.stringify(ids));
+  if (error) {
+    showToast('Error al guardar configuración: ' + error.message, 'error');
+  } else {
+    showToast('Configuración de categorías de inicio guardada');
+  }
+};
 
 window.openCatModal = function(c = null) {
   document.getElementById('cm-title').textContent = c ? 'Editar categoría' : 'Nueva categoría';
@@ -746,6 +931,16 @@ window.openSlideModal = function(s = null) {
   const preview = document.getElementById('slm-img-preview');
   preview.innerHTML = s?.image_url ? `<img src="${s.image_url}" style="height:80px;border-radius:var(--radius-sm);object-fit:cover">` : '';
   document.getElementById('modal-slide').classList.add('open');
+  window.updateSlideTextPreview();
+};
+
+window.updateSlideTextPreview = function() {
+  const title = document.getElementById('slm-title-in')?.value || '';
+  const subtitle = document.getElementById('slm-subtitle')?.value || '';
+  const titlePreview = document.getElementById('slm-preview-title');
+  const subPreview = document.getElementById('slm-preview-sub');
+  if (titlePreview) titlePreview.textContent = title;
+  if (subPreview) subPreview.textContent = subtitle;
 };
 
 window.uploadSlideImage = async function(input) {

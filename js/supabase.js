@@ -12,9 +12,49 @@ export async function getUser() {
   return user;
 }
 
+export async function getUserRole(email) {
+  if (!email) return null;
+  try {
+    const { data, error } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('email', email);
+    if (error) {
+      console.warn('Error fetching role from user_roles, defaulting to admin:', error);
+      return 'admin';
+    }
+    return (data && data.length > 0) ? data[0].role : 'admin';
+  } catch (err) {
+    console.error('Exception fetching user role:', err);
+    return 'admin';
+  }
+}
+
 export async function requireAuth() {
   const user = await getUser();
-  if (!user) { window.location.href = '/admin/login.html'; }
+  if (!user) {
+    window.location.href = '/admin/login.html';
+    return null;
+  }
+  const role = await getUserRole(user.email);
+  if (role === 'leads_viewer') {
+    window.location.href = '/leads-admin/index.html';
+    return null;
+  }
+  return user;
+}
+
+export async function requireLeadsAuth() {
+  const user = await getUser();
+  if (!user) {
+    window.location.href = '/leads-admin/login.html';
+    return null;
+  }
+  const role = await getUserRole(user.email);
+  if (role !== 'leads_viewer' && role !== 'admin') {
+    window.location.href = '/admin/index.html';
+    return null;
+  }
   return user;
 }
 
@@ -23,8 +63,9 @@ export async function signIn(email, password) {
 }
 
 export async function signOut() {
+  const isLeads = window.location.pathname.startsWith('/leads-admin/');
   await supabase.auth.signOut();
-  window.location.href = '/admin/login.html';
+  window.location.href = isLeads ? '/leads-admin/login.html' : '/admin/login.html';
 }
 
 // ── Settings helpers ──────────────────────────────────────────

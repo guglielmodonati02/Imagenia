@@ -11,7 +11,7 @@ async function init() {
   const wa = settings.contact_whatsapp || '';
   const igHandle = settings.instagram_handle || '';
   const igUrl = settings.instagram_url || '#';
-  const headerImg = settings.contact_header_image || '';
+  const headerImg = settings.headers_contacto || settings.contact_header_image || '';
 
   const headerEl = document.getElementById('contact-header');
   if (headerEl && headerImg) {

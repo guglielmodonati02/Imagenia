@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Login — IMAGENIA</title>
+  <title>Login Leads — IMAGENIA</title>
   <link rel="stylesheet" href="/css/styles.css">
   <style>
     body { background:var(--primary); display:flex; align-items:center; justify-content:center; min-height:100svh; }
@@ -17,12 +17,12 @@
 <body>
   <div class="login-card">
     <div class="login-logo">IMAGENIA</div>
-    <div class="login-sub">Panel de administración</div>
+    <div class="login-sub">Panel de visualización de leads</div>
     <div class="error-msg" id="error-msg">Credenciales incorrectas. Verifica tu email y contraseña.</div>
     <form id="login-form">
       <div class="form-group">
         <label class="form-label">Email</label>
-        <input type="email" class="form-input" id="l-email" required autofocus placeholder="admin@imagenia.mx">
+        <input type="email" class="form-input" id="l-email" required autofocus placeholder="leads@imagenia.mx">
       </div>
       <div class="form-group">
         <label class="form-label">Contraseña</label>
@@ -41,7 +41,7 @@
     getUser().then(async (u) => {
       if (u) {
         const role = await getUserRole(u.email);
-        if (role === 'leads_viewer') {
+        if (role === 'leads_viewer' || role === 'admin') {
           window.location.href = '/leads-admin/index.html';
         } else {
           window.location.href = '/admin/index.html';
@@ -67,13 +67,13 @@
         btn.textContent = 'Iniciar sesión'; btn.disabled = false;
       } else {
         const role = await getUserRole(data.user?.email);
-        if (role === 'leads_viewer') {
+        if (role !== 'leads_viewer' && role !== 'admin') {
           await supabase.auth.signOut();
-          errEl.textContent = 'Esta cuenta no está autorizada para este panel.';
+          errEl.textContent = 'Esta cuenta no tiene permisos para acceder a este panel de Leads.';
           errEl.classList.add('show');
           btn.textContent = 'Iniciar sesión'; btn.disabled = false;
         } else {
-          window.location.href = '/admin/index.html';
+          window.location.href = '/leads-admin/index.html';
         }
       }
     });

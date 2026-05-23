@@ -127,11 +127,20 @@ function loadAbout(settings) {
   const text = document.getElementById('about-text');
   const wrap = document.getElementById('about-image-wrap');
   
-  if (title && settings.about_title) title.textContent = settings.about_title;
-  if (text && settings.about_text) text.textContent = settings.about_text;
+  const aboutTitle = settings.home_about_title || settings.about_title;
+  const aboutText = settings.home_about_text || settings.about_text;
+  
+  if (title && aboutTitle) title.textContent = aboutTitle;
+  if (text && aboutText) text.textContent = aboutText;
   
   if (wrap && settings.home_about_image_url) {
-    wrap.innerHTML = `<img src="${settings.home_about_image_url}" alt="Acerca de IMAGENIA" loading="lazy" style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover;">`;
+    const url = settings.home_about_image_url;
+    const isVideo = url.toLowerCase().match(/\.(mp4|webm)$/);
+    if (isVideo) {
+      wrap.innerHTML = `<video src="${url}" style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover;" autoplay muted loop playsinline></video>`;
+    } else {
+      wrap.innerHTML = `<img src="${url}" alt="Acerca de IMAGENIA" loading="lazy" style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover;">`;
+    }
   }
 }
 
@@ -143,13 +152,40 @@ async function loadCategories(settings) {
     if (badge && settings.home_categories_badge) badge.textContent = settings.home_categories_badge;
     if (title && settings.home_categories_title) title.innerHTML = settings.home_categories_title;
   }
-  const { data } = await getCategories();
+  const { data: allCats } = await getCategories();
   const grid = document.getElementById('category-grid');
-  if (!data || !data.length) {
+  if (!allCats || !allCats.length) {
     grid.innerHTML = `<p class="text-muted" style="grid-column:1/-1;text-align:center;padding:2rem">Sin categorías aún. Agrégalas desde el panel de control.</p>`;
     return;
   }
-  grid.innerHTML = data.map(c => `
+
+  // Parse home categories config
+  let featuredIds = [];
+  if (settings && settings.home_featured_categories) {
+    try {
+      featuredIds = JSON.parse(settings.home_featured_categories);
+    } catch (e) {
+      console.error("Error parsing home_featured_categories:", e);
+    }
+  }
+
+  // Get active and featured categories
+  let featuredCats = [];
+  if (featuredIds && featuredIds.length) {
+    featuredCats = featuredIds
+      .map(id => allCats.find(c => c.id === id))
+      .filter(Boolean); // remove inactive/deleted categories
+  }
+
+  // Fallback: if no config or not enough categories, take first 4 active ones
+  if (featuredCats.length < 4) {
+    featuredCats = allCats.slice(0, 4);
+  } else {
+    featuredCats = featuredCats.slice(0, 4); // ensure exactly 4
+  }
+
+  // Render the 4 category cards
+  let html = featuredCats.map(c => `
     <div class="cat-img-card" onclick="window.location.href='/productos.html?cat=${c.slug}'" role="link" tabindex="0">
       ${c.image_url
         ? `<img src="${c.image_url}" alt="${c.name}" loading="lazy">`
@@ -159,7 +195,37 @@ async function loadCategories(settings) {
         <div class="cat-img-card-link">Ver productos →</div>
       </div>
     </div>`).join('');
+
+  // Build the mosaic images for the "Todos" card
+  const mosaicCells = featuredCats.map(c => {
+    if (c.image_url) {
+      return `<div class="cat-mosaic-cell"><img src="${c.image_url}" alt="${c.name}" loading="lazy"></div>`;
+    } else {
+      return `<div class="cat-mosaic-cell"><div style="width:100%;height:100%;background:var(--primary-container);display:flex;align-items:center;justify-content:center;"><span class="material-symbols-outlined" style="color:var(--primary);font-size:1.5rem;">${c.icon_name || 'category'}</span></div></div>`;
+    }
+  });
+
+  // Pad the mosaic with empty placeholders if less than 4 categories
+  while (mosaicCells.length < 4) {
+    mosaicCells.push(`<div class="cat-mosaic-cell"><div style="width:100%;height:100%;background:var(--surface-container-high);"></div></div>`);
+  }
+
+  // Add the "Todos" card html
+  const todosCardHtml = `
+    <div class="cat-img-card" onclick="window.location.href='/productos.html'" role="link" tabindex="0">
+      <div class="cat-mosaic-grid">
+        ${mosaicCells.join('')}
+      </div>
+      <div class="cat-img-card-overlay">
+        <div class="cat-img-card-name">Todos</div>
+        <div class="cat-img-card-link">Ver todo el catálogo →</div>
+      </div>
+    </div>
+  `;
+
+  grid.innerHTML = html + todosCardHtml;
 }
+
 
 /* ── Promo Banner ─────────────────────────────────────────────── */
 function loadPromoBanner(settings) {
@@ -206,15 +272,11 @@ async function loadProducts(tab) {
 }
 
 function renderProductCard(p) {
-  const tags = Array.isArray(p.tags) ? p.tags : (typeof p.tags === 'string' ? JSON.parse(p.tags || '[]') : []);
-  const tagPills = tags.slice(0,3).map(t => `<span class="tag-pill">${t.tag_name}</span>`).join('');
   return `
   <div class="card">
     <div class="card-image">${imgWithFallback(p.image_url, p.name)}</div>
     <div class="card-body">
-      ${p.category_name ? `<div class="card-tag">${p.category_name}</div>` : ''}
       <div class="card-title">${p.name}</div>
-      <div class="card-tags">${tagPills}</div>
       <button class="btn btn-primary btn-sm btn-full mt-3"
         onclick="event.stopPropagation();window.location.href='/contacto.html?producto=${encodeURIComponent(p.name)}'">
         Cotizar

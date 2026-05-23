@@ -455,8 +455,8 @@ footer {
   100% { background-position: -200% 0; }
 }
 
-/* ── Toast notifications ─────────────────────────────────────── */
-.toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 500; display: flex; flex-direction: column; gap: 0.5rem; }
+/* ── Toasts ──────────────────────────────────────────────────────── */
+.toast-container { position: fixed; bottom: 6rem; right: 1.5rem; z-index: 10000; display: flex; flex-direction: column; gap: 0.5rem; }
 .toast {
   padding: 0.875rem 1.5rem;
   border-radius: var(--radius-md);
@@ -569,8 +569,8 @@ footer {
   max-width: 1440px; margin: 0 auto; left: 0; right: 0;
 }
 .slide-text { max-width: 640px; z-index: 2; }
-.slide-text h1 { color: #fff; margin-bottom: 1rem; }
-.slide-text p { color: rgba(255,255,255,0.8); font-size: 1.1rem; margin-bottom: 2rem; max-width: 520px; line-height: 1.65; }
+.slide-text h1 { color: #fff; margin-bottom: 1rem; white-space: pre-line; }
+.slide-text p { color: rgba(255,255,255,0.8); font-size: 1.1rem; margin-bottom: 2rem; max-width: 520px; line-height: 1.65; white-space: pre-line; }
 .slide-cta { display: flex; gap: 1rem; flex-wrap: wrap; }
 
 /* Alternating positioning */
@@ -661,24 +661,72 @@ footer {
 
 /* ── Category cards with image ───────────────────────────────── */
 .cat-img-grid { 
-  display: flex; 
-  overflow-x: auto; 
+  display: grid; 
+  grid-template-columns: repeat(5, 1fr); 
   gap: 1.5rem; 
   padding: 0.5rem 0 1.5rem; 
-  scrollbar-width: none; 
-  scroll-snap-type: x mandatory;
-  -ms-overflow-style: none;
-  scroll-behavior: smooth;
 }
-.cat-img-grid::-webkit-scrollbar { display: none; }
+@media (max-width: 1200px) {
+  .cat-img-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .cat-img-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .cat-img-grid { grid-template-columns: 1fr; }
+}
+
+.cat-carousel {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding-top: 0.5rem;
+  padding-bottom: 1rem;
+  scrollbar-width: none;
+}
+.cat-carousel::-webkit-scrollbar {
+  display: none;
+}
+.cat-carousel .cat-img-card {
+  flex: 0 0 160px;
+  height: 140px;
+}
+.cat-carousel .cat-img-card-overlay {
+  padding: 0.75rem;
+}
+.cat-carousel .cat-img-card-name {
+  font-size: 0.85rem;
+  margin-bottom: 0;
+}
+.cat-carousel .cat-img-card-link {
+  font-size: 0.6rem;
+}
+.cat-carousel .cat-img-card-placeholder .material-symbols-outlined {
+  font-size: 2rem;
+}
 
 .cat-img-card {
-  flex: 0 0 280px;
-  scroll-snap-align: start;
   position: relative; height: 280px;
   border-radius: var(--radius-md); overflow: hidden;
   cursor: pointer; box-shadow: var(--shadow-card);
   background: var(--surface-container-low);
+  transition: transform var(--transition);
+}
+.cat-img-card:hover, .cat-img-card.active {
+  transform: translateY(-4px);
+}
+.cat-img-card.active {
+  outline: 3px solid var(--secondary);
+  outline-offset: -3px;
+  box-shadow: 0 12px 24px rgba(21,66,18,0.25);
+}
+.cat-img-card.active .cat-img-card-overlay {
+  background: linear-gradient(to top, rgba(21,66,18,0.95) 0%, rgba(21,66,18,0.4) 100%);
+}
+.cat-img-card.active .cat-img-card-link {
+  color: #fff;
+  font-weight: 800;
+  text-decoration: underline;
 }
 .cat-img-card img {
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
@@ -690,6 +738,7 @@ footer {
   background: linear-gradient(to top, rgba(21,66,18,0.85) 0%, transparent 55%);
   display: flex; flex-direction: column; justify-content: flex-end;
   padding: 1.25rem;
+  z-index: 2;
 }
 .cat-img-card-name { font-family: 'Manrope',sans-serif; font-weight: 800; font-size: 1rem; color: #fff; margin-bottom: 0.25rem; }
 .cat-img-card-link { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary-fixed-dim); }
@@ -699,6 +748,32 @@ footer {
   display: flex; align-items: center; justify-content: center;
 }
 .cat-img-card-placeholder .material-symbols-outlined { font-size: 3.5rem; color: var(--outline-variant); }
+
+/* ── Mosaic Grid inside card ── */
+.cat-mosaic-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  width: 100%; height: 100%;
+  position: absolute; inset: 0;
+  gap: 2px;
+  background: var(--surface-container-high);
+  z-index: 1;
+}
+.cat-mosaic-cell {
+  overflow: hidden;
+  position: relative;
+  width: 100%; height: 100%;
+}
+.cat-mosaic-cell img, .cat-mosaic-cell div {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+.cat-img-card:hover .cat-mosaic-cell img {
+  transform: scale(1.08);
+}
 
 /* ── Promo Banner ────────────────────────────────────────────── */
 .promo-banner {

@@ -55,6 +55,9 @@
     .upload-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
     .tab-sections{display:none}
     .tab-sections.visible{display:block}
+    .pm-gallery-item{cursor:grab;transition:transform 0.2s, border-color 0.2s}
+    .pm-gallery-item:active{cursor:grabbing}
+    .pm-gallery-item.drag-over{border-color:var(--primary) !important;transform:scale(1.05)}
     @media(max-width:900px){.admin-sidebar{transform:translateX(-100%)}.admin-main{margin-left:0}.stats-grid{grid-template-columns:repeat(2,1fr)}}
   </style>
 </head>
@@ -67,6 +70,9 @@
       <button class="admin-nav-item active" onclick="showSection('dashboard',this)">
         <span class="material-symbols-outlined">dashboard</span>Dashboard
       </button>
+      <a href="/leads-admin/index.html" class="admin-nav-item" style="text-decoration:none">
+        <span class="material-symbols-outlined">groups</span>Panel de Leads
+      </a>
       <button class="admin-nav-item" onclick="showSection('settings',this)">
         <span class="material-symbols-outlined">tune</span>Contenido del sitio
       </button>
@@ -322,6 +328,37 @@
         <table><thead><tr><th>Nombre</th><th>Slug</th><th>Ícono</th><th>Orden</th><th>Activa</th><th></th></tr></thead>
         <tbody id="categories-table"></tbody></table>
       </div></div>
+
+      <!-- Categorías Destacadas en Inicio -->
+      <div class="panel" style="margin-top: 2rem;">
+        <div class="panel-header">
+          <h3>Categorías Destacadas en Inicio (Máximo 4)</h3>
+          <button class="btn btn-primary btn-sm" onclick="saveHomeCategoriesConfig()">Guardar Configuración</button>
+        </div>
+        <div class="panel-body">
+          <p style="font-size: 0.85rem; color: var(--on-surface-variant); margin-bottom: 1.5rem;">
+            Selecciona las 4 categorías que se mostrarán en la página principal y su orden de aparición. La quinta tarjeta será "Todos" de forma automática y mostrará un mosaico con imágenes de estas 4 categorías.
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+            <div class="form-group">
+              <label class="form-label">Posición 1 *</label>
+              <select class="form-input home-cat-select" id="home-cat-pos-1" required></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Posición 2 *</label>
+              <select class="form-input home-cat-select" id="home-cat-pos-2" required></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Posición 3 *</label>
+              <select class="form-input home-cat-select" id="home-cat-pos-3" required></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Posición 4 *</label>
+              <select class="form-input home-cat-select" id="home-cat-pos-4" required></select>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Tags and Groups -->
@@ -417,6 +454,14 @@
               </label>
             </div>
             <div id="pm-img-preview" style="margin-top:0.75rem"></div>
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Galería de imágenes (hasta 10 fotos)</label>
+            <div id="pm-gallery-container" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem;"></div>
+            <label class="btn btn-secondary btn-sm upload-btn" style="display:inline-flex;align-items:center;gap:0.5rem">
+              <span class="material-symbols-outlined" style="font-size:1rem">upload</span> Agregar a la galería
+              <input type="file" accept="image/*" multiple onchange="uploadGalleryImages(this)">
+            </label>
           </div>
           <div class="form-group" style="grid-column:1/-1">
             <label class="form-label">Tags (selecciona uno o más)</label>
@@ -597,8 +642,26 @@
       </div>
       <div class="modal-body">
         <input type="hidden" id="slm-id">
-        <div class="form-group"><label class="form-label">Título</label><input type="text" class="form-input" id="slm-title-in" placeholder="Muebles de Exterior Premium"></div>
-        <div class="form-group"><label class="form-label">Subtítulo</label><textarea class="form-textarea" id="slm-subtitle" style="min-height:70px" placeholder="Descripción breve..."></textarea></div>
+        <div class="form-group">
+          <label class="form-label">Título</label>
+          <textarea class="form-textarea" id="slm-title-in" style="min-height:50px" placeholder="Muebles de Exterior Premium" oninput="updateSlideTextPreview()"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subtítulo</label>
+          <textarea class="form-textarea" id="slm-subtitle" style="min-height:70px" placeholder="Descripción breve..." oninput="updateSlideTextPreview()"></textarea>
+        </div>
+        
+        <!-- Vista Previa de Texto (En el Slider) -->
+        <div class="form-group">
+          <label class="form-label">Previsualización de Texto (en el Slider)</label>
+          <div id="slm-text-preview-container" style="background:var(--primary); padding:2rem; border-radius:var(--radius-md); position:relative; overflow:hidden; min-height:160px; display:flex; align-items:center;">
+            <div style="position:absolute; inset:0; background:linear-gradient(to right, rgba(21,66,18,0.88) 0%, rgba(21,66,18,0.35) 60%, transparent 100%); z-index:1;"></div>
+            <div style="position:relative; z-index:2; width:100%; text-align:left; color:#fff;">
+              <h1 id="slm-preview-title" style="font-family:'Manrope',sans-serif; font-size:1.5rem; font-weight:800; line-height:1.2; color:#fff; margin-bottom:0.5rem; white-space:pre-line;"></h1>
+              <p id="slm-preview-sub" style="font-family:'Manrope',sans-serif; font-size:0.9rem; color:rgba(255,255,255,0.85); line-height:1.4; margin:0; white-space:pre-line; max-width:440px;"></p>
+            </div>
+          </div>
+        </div>
         <div class="form-group">
           <label class="form-label">Imagen *</label>
           <div style="display:flex;gap:0.75rem;align-items:center">

@@ -27,12 +27,17 @@
     .filter-group-toggle { cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none; }
     .filter-group-body { overflow:hidden;transition:max-height 0.3s ease; }
     .filter-group-body.collapsed { max-height:0; }
+    .qv-thumb { border-radius: var(--radius-sm); border: 2px solid var(--outline-variant); cursor: pointer; flex-shrink: 0; transition: border-color 0.2s, transform 0.2s; }
+    .qv-thumb:hover { transform: scale(1.05); }
+    .qv-thumb.active { border-color: var(--primary) !important; }
+    .lightbox-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:400; align-items:center; justify-content:center; }
+    .lightbox-modal.open { display:flex; }
   </style>
 </head>
 <body>
   <div id="nav-placeholder"></div>
   <main>
-    <div class="page-header">
+    <div class="page-header" id="productos-header">
       <div class="container">
         <span class="label-sm text-secondary">Catálogo</span>
         <h1>Productos</h1>
@@ -42,13 +47,9 @@
 
     <section class="section">
       <div class="container">
-        <!-- Category tabs -->
-        <div class="tabs mb-4" id="cat-tabs">
-          <button class="tab-btn active" onclick="setCategory('todos',this)">
-            <span class="material-symbols-outlined">grid_view</span>
-            Todos
-          </button>
-          <!-- more tabs added by JS -->
+        <!-- Category Cards Carousel -->
+        <div class="cat-carousel mb-4" id="cat-tabs">
+          <!-- Rendered by JS -->
         </div>
 
         <!-- Active filters -->
@@ -112,12 +113,15 @@
       </div>
       <div class="modal-body">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
-          <div style="aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;background:var(--surface-container-low)" id="qv-image"></div>
+          <div style="display:flex; flex-direction:column; gap:0.75rem;">
+            <div style="aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;background:var(--surface-container-low);cursor:zoom-in;display:flex;align-items:center;justify-content:center;" id="qv-image" onclick="openLightbox()"></div>
+            <div id="qv-gallery" style="display:none; gap:0.5rem; overflow-x:auto; padding-bottom:0.25rem;"></div>
+          </div>
           <div>
-            <div id="qv-category" class="card-tag mb-2"></div>
+            <div id="qv-category" class="card-tag mb-2" style="display: none;"></div>
             <div id="qv-sku" style="font-family:'Manrope',sans-serif; font-weight:700; font-size:0.8rem; color:var(--primary); margin-bottom:0.5rem; display:none;"></div>
-            <p id="qv-desc" class="text-muted" style="font-size:0.9rem;margin-bottom:1.5rem"></p>
-            <div id="qv-tags" class="card-tags mb-3"></div>
+            <p id="qv-desc" class="text-muted" style="font-size:0.9rem;margin-bottom:1.5rem;white-space:pre-line;"></p>
+            <div id="qv-tags" class="card-tags mb-3" style="display: none;"></div>
             <div style="display:flex; gap:0.5rem;">
               <a id="qv-cotizar" href="/contacto.html" class="btn btn-primary" style="flex:1;">Cotizar este producto</a>
               <button id="qv-add-cart" class="btn btn-secondary" title="Añadir a la lista de cotización" style="padding:0 1rem; border-color:var(--outline-variant); background:var(--surface-container-low);">
@@ -128,6 +132,12 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Lightbox Modal -->
+  <div class="lightbox-modal" id="lightbox-modal" onclick="closeLightbox()">
+    <button class="modal-close" style="position:absolute;top:1.5rem;right:1.5rem;color:#fff;background:none;border:none;cursor:pointer;" onclick="closeLightbox()"><span class="material-symbols-outlined" style="font-size:2rem">close</span></button>
+    <img id="lightbox-img" src="" style="max-width:90%;max-height:90%;object-fit:contain;border-radius:var(--radius-sm)">
   </div>
 
   <script type="module" src="/js/productos.js"></script>
