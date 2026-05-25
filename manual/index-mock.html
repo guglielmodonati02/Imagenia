@@ -60,6 +60,15 @@
     .pm-gallery-item.drag-over{border-color:var(--primary) !important;transform:scale(1.05)}
     @media(max-width:900px){.admin-sidebar{transform:translateX(-100%)}.admin-main{margin-left:0}.stats-grid{grid-template-columns:repeat(2,1fr)}}
   </style>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "/js/supabase.js": "/js/supabase-mock.js"
+    }
+  }
+  </script>
+    
 </head>
 <body>
   <!-- Sidebar -->
@@ -882,5 +891,37 @@
   <!-- Quill JS -->
   <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
   <script type="module" src="/js/admin.js?v=1.1"></script>
+
+  <script>
+  window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tab = urlParams.get('tab');
+      const modal = urlParams.get('modal');
+      
+      if (tab) {
+        const btn = Array.from(document.querySelectorAll('.admin-nav-item')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + tab + "'"));
+        if (btn) {
+          showSection(tab, btn);
+        }
+      }
+      
+      if (modal) {
+        setTimeout(() => {
+          if (modal === 'product' && window.openProductModal) openProductModal();
+          else if (modal === 'category' && window.openCatModal) openCatModal();
+          else if (modal === 'catalog' && window.openCatalogModal) openCatalogModal();
+          else if (modal === 'slide' && window.openSlideModal) openSlideModal();
+          else if (modal === 'wa-question' && window.openWAQModal) openWAQModal();
+          else if (modal === 'client' && window.openClientModal) openClientModal();
+          else if (modal === 'blog' && window.openBlogModal) openBlogModal();
+          else if (modal === 'impact' && window.openImpactModal) openImpactModal();
+          else if (modal === 'comparison' && window.openCompModal) openCompModal();
+        }, 300);
+      }
+    }, 400);
+  });
+  </script>
+    
 </body>
 </html>

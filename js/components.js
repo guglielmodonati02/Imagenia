@@ -46,7 +46,9 @@ export function renderNav(activeLink = '') {
   <header>
     <nav class="glass-nav">
       <div class="nav-inner">
-        <a href="/index.html" class="nav-logo">IMAGENIA</a>
+        <a href="/index.html" class="nav-logo">
+          <img src="/assets/imagenia%20_re_edit.png" alt="IMAGENIA">
+        </a>
         <div class="nav-links" id="nav-links">
           ${navLinks}
         </div>
@@ -101,7 +103,7 @@ export function renderFooter(settings = {}, impactStats = []) {
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
   const clientsTitle = settings.footer_clients_title || 'Proyectos y Clientes';
-  
+
   const half = Math.ceil(activeClients.length / 2);
   const row1 = activeClients.slice(0, half);
   const row2 = activeClients.slice(half).length ? activeClients.slice(half) : activeClients;
@@ -140,7 +142,9 @@ export function renderFooter(settings = {}, impactStats = []) {
     <div class="container">
       <div class="footer-top" style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:1.5rem; margin-bottom:4rem; padding-bottom:3rem; border-bottom:1px solid rgba(255,255,255,0.08)">
         <div style="max-width:600px">
-          <div class="footer-logo">IMAGENIA</div>
+          <div class="footer-logo">
+            <img src="/assets/logo_con_letras_blancas.png" alt="IMAGENIA">
+          </div>
           <p class="footer-tagline" style="margin-top:0.5rem">${settings.footer_tagline || 'Ingeniería sustentable para espacios que perduran.'}</p>
         </div>
         <div class="footer-social" style="display:flex; gap:1rem; justify-content:center;">
@@ -240,7 +244,7 @@ export async function initPage(activeLink = '') {
 
   // WhatsApp widget
   initWhatsApp(settings);
-  
+
   window.siteSettings = settings;
   window.showToast = showToast;
   Cart.init();
@@ -264,11 +268,11 @@ window.handleSearch = function (val) {
   }
 };
 
-window.openLegalModal = function(type) {
+window.openLegalModal = function (type) {
   const modal = document.getElementById('legal-modal-overlay');
   const title = document.getElementById('legal-modal-title');
   const content = document.getElementById('legal-modal-content');
-  
+
   if (!modal || !title || !content) return;
 
   if (type === 'privacy') {
@@ -280,12 +284,12 @@ window.openLegalModal = function(type) {
     const termsText = document.getElementById('legal-text-terms');
     content.innerHTML = termsText ? termsText.innerHTML : '';
   }
-  
+
   modal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
 };
 
-window.closeLegalModal = function() {
+window.closeLegalModal = function () {
   const modal = document.getElementById('legal-modal-overlay');
   if (modal) {
     modal.style.display = 'none';

@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manual de Usuario — Panel de Administración IMAGENIA</title>
+  <!-- Google Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@400,0&display=swap"
+    rel="stylesheet">
+
+  <style>
+    /* ── Variables de Diseño de Imagenia ── */
+    :root {
+      --primary: #154212;
+      --secondary: #006e1c;
+      --on-surface: #1b1c1c;
+      --on-surface-variant: #42493e;
+      --surface-container-low: #f6f3f2;
+      --border-color: #eae8e7;
+    }
+
+    /* ── Estilos Generales de Pantalla ── */
+    body {
+      font-family: 'Inter', sans-serif;
+      color: var(--on-surface);
+      line-height: 1.7;
+      margin: 0;
+      padding: 0;
+      background-color: #faf8f7;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      font-family: 'Manrope', sans-serif;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 0;
+    }
+
+    /* Contenedor principal con panel de navegación lateral para pantalla */
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Navegación lateral (Solo visible en pantalla) */
+    .manual-sidebar {
+      width: 280px;
+      background-color: var(--primary);
+      color: #ffffff;
+      padding: 2rem 1.5rem;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .manual-sidebar-logo {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .manual-sidebar-logo img {
+      max-width: 180px;
+      height: auto;
+    }
+
+    .manual-sidebar h3 {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+      margin-top: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 0.25rem;
+    }
+
+    .manual-nav-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .manual-nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0.8rem;
+      color: rgba(255, 255, 255, 0.85);
+      text-decoration: none;
+      font-size: 0.85rem;
+      border-radius: 6px;
+      transition: background 0.2s, color 0.2s;
+      font-weight: 500;
+    }
+
+    .manual-nav-item a:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    .manual-nav-item.active a {
+      background: var(--secondary);
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .manual-nav-item .material-symbols-outlined {
+      font-size: 1.2rem;
+    }
+
+    /* Contenido principal (Para pantalla) */
+    .manual-content {
+      margin-left: 280px;
+      padding: 3rem 4rem;
+      flex: 1;
+      max-width: 960px;
+    }
+
+    /* Botón Flotante para Imprimir (Solo en pantalla) */
+    .print-button {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background-color: var(--secondary);
+      color: #ffffff;
+      border: none;
+      padding: 0.85rem 1.5rem;
+      border-radius: 50px;
+      font-family: 'Manrope', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      transition: transform 0.2s, background-color 0.2s;
+    }
+
+    .print-button:hover {
+      transform: translateY(-2px);
+      background-color: var(--primary);
+    }
+
+    /* ── Estructura de Páginas del Documento ── */
+    .manual-section {
+      background: #ffffff;
+      padding: 3rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      margin-bottom: 3rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .section-title {
+      font-size: 1.85rem;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      border-bottom: 3px solid var(--secondary);
+      padding-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-title .material-symbols-outlined {
+      font-size: 2rem;
+      color: var(--secondary);
+    }
+
+    /* Portada */
+    .cover-page {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      min-height: 80vh;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 4rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      border: 1px solid var(--border-color);
+      margin-bottom: 3rem;
+    }
+
+    .cover-logo {
+      max-width: 260px;
+      margin-bottom: 3rem;
+    }
+
+    .cover-title {
+      font-size: 2.8rem;
+      font-weight: 800;
+      line-height: 1.2;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    .cover-subtitle {
+      font-size: 1.25rem;
+      color: var(--on-surface-variant);
+      margin-bottom: 4rem;
+      max-width: 600px;
+    }
+
+    .cover-meta {
+      font-size: 0.9rem;
+      color: #72796e;
+      border-top: 1px solid var(--border-color);
+      padding-top: 1.5rem;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .cover-meta p {
+      margin: 0.25rem 0;
+    }
+
+    /* Contenedor de Capturas de Pantalla */
+    .screenshot-container {
+      margin: 2rem 0;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      background: var(--surface-container-low);
+    }
+
+    .screenshot-container img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .screenshot-caption {
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+      color: var(--on-surface-variant);
+      background: var(--surface-container-low);
+      border-top: 1px solid var(--border-color);
+      text-align: center;
+      font-style: italic;
+    }
+
+    /* Caja de Consejos / Alertas */
+    .tip-box {
+      background-color: rgba(21, 66, 18, 0.04);
+      border-left: 4px solid var(--primary);
+      padding: 1.25rem 1.5rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1.5rem 0;
+    }
+
+    .tip-box h5 {
+      margin: 0 0 0.5rem 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tip-box p {
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--on-surface-variant);
+    }
+
+    /* Pasos e Instrucciones */
+    ol.steps-list {
+      padding-left: 1.25rem;
+    }
+
+    ol.steps-list li {
+      margin-bottom: 0.75rem;
+    }
+
+    ol.steps-list li strong {
+      color: var(--primary);
+    }
+
+    /* Tablas de Información */
+    table.info-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    table.info-table th {
+      background-color: var(--primary);
+      color: #ffffff;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      font-family: 'Manrope', sans-serif;
+      font-weight: 600;
+    }
+
+    table.info-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--on-surface-variant);
+    }
+
+    table.info-table tr:nth-child(even) {
+      background-color: #fbf9f8;
+    }
+
+    /* ── Estilos de Impresión (@media print) ── */
+    @media print {
+
+      /* Ocultar barra lateral y botón de imprimir */
+      .manual-sidebar,
+      .print-button {
+        display: none !important;
+      }
+
+      /* Ajustar márgenes para papel físico */
+      body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+      }
+
+      .manual-content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+
+      /* Cada sección es una página independiente */
+      .manual-section,
+      .cover-page {
+        page-break-before: always !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 2rem 0 !important;
+        margin-bottom: 0 !important;
+      }
+
+      /* Evitar que la portada tenga salto inicial doble */
+      .cover-page {
+        page-break-before: avoid !important;
+        min-height: 95vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+      }
+
+      /* Prevenir saltos de página huérfanos */
+      h2,
+      h3,
+      h4 {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+      }
+
+      .screenshot-container,
+      .tip-box,
+      table.info-table {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      /* Forzar impresión de colores de fondo en navegadores */
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Botón Flotante para Imprimir (Solo en Navegador) -->
+  <button class="print-button" onclick="window.print()">
+    <span class="material-symbols-outlined">print</span> Guardar como PDF / Imprimir
+  </button>
+
+  <div class="app-container">
+
+    <!-- Barra Lateral de Navegación (Solo en Navegador) -->
+    <aside class="manual-sidebar">
+      <div class="manual-sidebar-logo">
+        <img src="../assets/logo_con_letras_blancas.png" alt="IMAGENIA">
+      </div>
+
+      <h3>Guía Rápida</h3>
+      <ul class="manual-nav-list">
+        <li class="manual-nav-item"><a href="#introduccion"><span
+              class="material-symbols-outlined">help</span>Introducción</a></li>
+        <li class="manual-nav-item"><a href="#acceso"><span class="material-symbols-outlined">login</span>Acceso y
+            Seguridad</a></li>
+        <li class="manual-nav-item"><a href="#dashboard"><span
+              class="material-symbols-outlined">dashboard</span>Dashboard</a></li>
+      </ul>
+
+      <h3>Diseño y Textos</h3>
+      <ul class="manual-nav-list">
+        <li class="manual-nav-item"><a href="#contenido"><span class="material-symbols-outlined">tune</span>Contenido
+            General</a></li>
+        <li class="manual-nav-item"><a href="#contador"><span class="material-symbols-outlined">counter_1</span>Contador
+            Plástico</a></li>
+        <li class="manual-nav-item"><a href="#slider"><span class="material-symbols-outlined">slideshow</span>Carrusel
+            Principal</a></li>
+        <li class="manual-nav-item"><a href="#impacto"><span class="material-symbols-outlined">eco</span>Estadísticas
+            Impacto</a></li>
+        <li class="manual-nav-item"><a href="#blogs"><span class="material-symbols-outlined">article</span>Blogs y
+            Noticias</a></li>
+        <li class="manual-nav-item"><a href="#comparaciones"><span
+              class="material-symbols-outlined">compare_arrows</span>Comparaciones</a></li>
+        <li class="manual-nav-item"><a href="#clientes"><span class="material-symbols-outlined">handshake</span>Logos de
+            Clientes</a></li>
+      </ul>
+
+      <h3>Catálogo de Productos</h3>
+      <ul class="manual-nav-list">
+        <li class="manual-nav-item"><a href="#productos"><span class="material-symbols-outlined">chair</span>Fichas de
+            Productos</a></li>
+        <li class="manual-nav-item"><a href="#categorias"><span
+              class="material-symbols-outlined">category</span>Categorías</a></li>
+        <li class="manual-nav-item"><a href="#filtros"><span class="material-symbols-outlined">label</span>Tags e
+            Filtros</a></li>
+        <li class="manual-nav-item"><a href="#catalogos"><span
+              class="material-symbols-outlined">menu_book</span>Catálogos PDF</a></li>
+      </ul>
+
+      <h3>Mensajes y WhatsApp</h3>
+      <ul class="manual-nav-list">
+        <li class="manual-nav-item"><a href="#mensajes"><span class="material-symbols-outlined">mail</span>Mensajes
+            Recibidos</a></li>
+        <li class="manual-nav-item"><a href="#wa-preguntas"><span class="material-symbols-outlined">quiz</span>Chat de
+            WhatsApp</a></li>
+        <li class="manual-nav-item"><a href="#wa-leads"><span class="material-symbols-outlined">contacts</span>Leads de
+            WhatsApp</a></li>
+        <li class="manual-nav-item"><a href="#leads-panel"><span class="material-symbols-outlined">analytics</span>Panel de Leads</a></li>
+      </ul>
+    </aside>
+
+    <!-- Contenido Principal del Manual -->
+    <main class="manual-content">
+
+      <!-- Portada del Documento -->
+      <section class="cover-page">
+        <img class="cover-logo" src="../assets/logo no blanco.png" alt="IMAGENIA">
+        <h1 class="cover-title">MANUAL DE USUARIO</h1>
+        <p class="cover-subtitle">Guía de administración y actualización del sitio web corporativo de IMAGENIA</p>
+
+        <div class="cover-meta">
+          <p><strong>Actualizado:</strong> Mayo, 2026</p>
+          <p><strong>Diseñado para:</strong> Administradores del Sitio</p>
+          <p><strong>Idioma:</strong> Español</p>
+          <p style="margin-top: 1rem; font-size: 0.8rem; opacity: 0.8;">Para guardar esta guía, presione el botón
+            flotante "Guardar como PDF" en la parte inferior derecha.</p>
+        </div>
+      </section>
+
+      <!-- 1. Introducción -->
+      <section class="manual-section" id="introduccion">
+        <h2 class="section-title"><span class="material-symbols-outlined">help</span>1. Introducción</h2>
+        <p>¡Bienvenido al manual del administrador de <strong>IMAGENIA</strong>! Este documento ha sido diseñado de
+          manera 100% no técnica para guiarte en el uso, control y mantenimiento del panel de control de tu sitio web.
+        </p>
+        <p>Con este panel serás capaz de actualizar imágenes, publicar nuevas historias en el blog, cargar productos,
+          crear filtros de búsqueda y responder las solicitudes directas de tus clientes sin necesidad de escribir
+          código ni depender de programadores.</p>
+        <div class="tip-box">
+          <h5><span class="material-symbols-outlined">info</span>Recomendación Inicial</h5>
+          <p>Mantén este panel guardado en tus favoritos. Antes de realizar cambios importantes en tus productos o
+            catálogos, te recomendamos tener tus imágenes listas en la computadora y en el tamaño idóneo.</p>
+        </div>
+      </section>
+
+      <!-- 2. Acceso y Seguridad -->
+      <section class="manual-section" id="acceso">
+        <h2 class="section-title"><span class="material-symbols-outlined">login</span>2. Acceso y Seguridad</h2>
+        <p>Para ingresar al panel de control, accede desde tu navegador web a la dirección privada que te ha sido
+          asignada para la administración de tu página.</p>
+        <p>Encontrarás una pantalla sencilla donde debes introducir tus datos:</p>
+        <ol class="steps-list">
+          <li><strong>Correo electrónico:</strong> Ingresa tu cuenta de administrador registrada.</li>
+          <li><strong>Contraseña:</strong> Digita la clave segura de acceso.</li>
+          <li>Haz clic en el botón <strong>Entrar</strong>.</li>
+        </ol>
+
+        <div class="tip-box">
+          <h5><span class="material-symbols-outlined">lock</span>Seguridad de tu Cuenta</h5>
+          <p>No compartas tus claves de acceso. Si requieres que otra persona colabore administrando el catálogo o
+            leyendo correos, es preferible crearle un acceso propio.</p>
+        </div>
+      </section>
+
+      <!-- 3. Dashboard -->
+      <section class="manual-section" id="dashboard">
+        <h2 class="section-title"><span class="material-symbols-outlined">dashboard</span>3. Dashboard (Panel Principal)
+        </h2>
+        <p>Al iniciar sesión verás la pantalla del <strong>Dashboard</strong>. Este es el resumen rápido de la actividad
+          de tu web.</p>
+
+        <div class="screenshot-container">
+          <img src="screenshots/dashboard.png" alt="Vista del Dashboard">
+          <div class="screenshot-caption">Figura 3.1: Vista general del panel de inicio rápido y mensajes recientes.
+          </div>
+        </div>
+
+        <p>En esta sección encontrarás:</p>
+        <ul>
+          <li><strong>Tarjetas estadísticas:</strong> Muestra la cantidad total de productos activos en la tienda,
+            catálogos PDFs subidos y mensajes de contacto recibidos en el buzón.</li>
+          <li><strong>Actividad Reciente (Mensajes):</strong> Una tabla con las últimas 5 personas que han llenado el
+            formulario de contacto de tu sitio web, mostrándote de inmediato sus nombres, correos y empresas.</li>
+        </ul>
+      </section>
+
+      <!-- 4. Contenido General -->
+      <section class="manual-section" id="contenido">
+        <h2 class="section-title"><span class="material-symbols-outlined">tune</span>4. Contenido General del Sitio</h2>
+        <p>En el menú lateral encontrarás la opción <strong>Contenido del Sitio</strong>. Aquí controlas los textos e
+          imágenes globales de tu página web agrupados por pestañas.</p>
+
+        <div class="screenshot-container">
+          <img src="screenshots/site_settings.png" alt="Pantalla de Contenido del Sitio">
+          <div class="screenshot-caption">Figura 4.1: Editor de textos, banners promocionales y enlaces a redes
+            sociales.</div>
+        </div>
+
+        <p><strong>¿Cómo editar esta información?</strong></p>
+        <ol class="steps-list">
+          <li>Busca la sección correspondiente (ej: *Página: Inicio* o *Configuración WhatsApp*).</li>
+          <li>Edita el texto del campo directamente. Si es un archivo o banner de cabecera, verás la opción de
+            <strong>Subir Archivo</strong>.</li>
+          <li>Haz clic en el botón <strong>Guardar cambios</strong> ubicado en la esquina superior derecha del panel
+            para publicar los cambios.</li>
+        </ol>
+
+        <div class="tip-box">
+          <h5><span class="material-symbols-outlined">edit_note</span>Edición con Texto Enriquecido</h5>
+          <p>Para apartados como los términos de servicio, verás una barra de herramientas con opciones para poner
+            negritas, cursivas o crear listas. Funciona exactamente igual a un redactor de texto convencional.</p>
+        </div>
+      </section>
+
+      <!-- 5. Contador Plástico -->
+      <section class="manual-section" id="contador">
+        <h2 class="section-title"><span class="material-symbols-outlined">counter_1</span>5. Contador Plástico</h2>
+        <p>Esta función es clave para resaltar el impacto ecológico de la marca. Permite controlar la gran cifra animada
+          que se muestra en el sitio web detallando los kilos o toneladas reciclados.</p>
+
+        <div class="screenshot-container">
+          <img src="screenshots/counter.png" alt="Configuración del Contador Plástico">
+          <div class="screenshot-caption">Figura 5.1: Vista previa en vivo del contador de impacto ecológico.</div>
+        </div>
+
+        <p><strong>Configuración paso a paso:</strong></p>
+        <ol class="steps-list">
+          <li><strong>Número actual:</strong> Escribe el valor neto (ej: <code>2540</code>). <em>Importante: Escribe
+              solo números, el sistema les colocará las comas de miles automáticamente.</em></li>
+          <li><strong>Etiqueta y sub-etiqueta:</strong> Escribe la explicación de la cifra que verán tus visitantes (ej:
+            "Toneladas de Plástico Recuperado").</li>
+          <li><strong>Prefijos y sufijos:</strong> Puedes agregar un signo de más (<code>+</code>) antes o las unidades
+            (<code>T</code> o <code>kg</code>) después del número.</li>
+          <li><strong>Color de fondo:</strong> Selecciona el color de la tarjeta desde la paleta de colores.</li>
+          <li>Haz clic en <strong>Guardar contador</strong>.</li>
+        </ol>
+      </section>
+
+      <!-- 6. Carrusel Principal (Hero Slider) -->
+      <section class="manual-section" id="slider">
+        <h2 class="section-title"><span class="material-symbols-outlined">slideshow</span>6. Carrusel Principal (Hero
+          Slider)</h2>
+        <p>El carrusel o slider son las imágenes grandes y dinámicas que ven los visitantes al cargar por primera vez tu
+          sitio web de inicio.</p>
+
+        <div class="screenshot-container">
+          <img src="screenshots/slides_modal.png" alt="Ventana de edición de Diapositiva">
+          <div class="screenshot-caption">Figura 6.2: Formulario de edición y previsualización de textos para banners de
+            inicio.</div>
+        </div>
+
+        <p><strong>Cómo añadir o modificar diapositivas:</strong></p>
+        <ol class="steps-list">
+          <li>Haz clic en <strong>+ Agregar slide</strong> para uno nuevo, o en el icono de <strong>lápiz
+              (azul)</strong> en la tabla para modificar uno existente.</li>
+          <li>Escribe un <strong>Título</strong> y <strong>Subtítulo</strong> claro. Notarás que el formulario te brinda
+            una <em>Previsualización de Texto</em> en vivo para ver cómo contrasta contra el fondo verde de marca.</li>
+          <li><strong>Imagen:</strong> Haz clic en <strong>Subir</strong> para cargar una nueva fotografía desde tu
+            computadora.</li>
+          <li><strong>CTA Texto y URL:</strong> Establece el nombre del botón y a dónde debe dirigir a tus clientes
+            cuando hagan clic (ej: "Ver Catálogos" dirigido a <code>/catalogos.html</code>).</li>
+          <li>Escribe un número en <strong>Orden</strong> para decidir cuál slide aparecerá primero (ej: 0, 1, 2).</li>
+          <li>Haz clic en <strong>Guardar</strong>.</li>
+        </ol>
+      </section>
+
+      <!-- 7. Estadísticas de Impacto -->
+      <section class="manual-section" id="impacto">
+        <h2 class="section-title"><span class="material-symbols-outlined">eco</span>7. Estadísticas de Impacto</h2>
+        <p>A través de esta sección administras las cifras de impacto de sustentabilidad que se muestran en el pie de
+          página (footer) y en el cuerpo del sitio web.</p>
+
+        <div class="screenshot-container">
+          <img src="screenshots/impact.png" alt="Listado de Estadísticas de Impacto">
+          <div class="screenshot-caption">Figura 7.1: Tabla de administración de cifras e iconos de impacto.</div>
+        </div>
+
+        <p><strong>Para gestionar las estadísticas:</strong></p>
+        <ul>
+          <li><strong>Ícono:</strong> Escribe el nombre del ícono ecológico (de la biblioteca oficial de iconos que se
+            muestra).</li>
+          <li><strong>Valor y Label:</strong> Escribe la cifra que deseas presumir (ej: "2,400 T" y la descripción corta
+            como "Material reciclado").</li>
+          <li>Usa el cuadro de <strong>Activo</strong> para mostrar u ocultar la tarjeta sin eliminarla de tu base.</li>
+        </ul>
+      </section>
+
+      <!-- 8. Blogs e Historias -->
+      <section class="manual-section" id="blogs">
+        <h2 class="section-title"><span class="material-symbols-outlined">article</span>8. Blogs y Noticias</h2>
+        <p>Esta herramienta te permite compartir con tus clientes las novedades sustentables y proyectos finalizados de
+          Imagenia.</p>
+
+        <div class="screenshot-container">
+          <img src="screenshots/blogs.png" alt="Listado de Publicaciones de Blog">
+          <div class="screenshot-caption">Figura 8.1: Panel de blogs y publicaciones de la empresa.</div>
+        </div>
+
+        <p><strong>Pasos para publicar en el Blog:</strong></p>
+        <ol class="steps-list">
+          <li>Haz clic en <strong>+ Agregar blog</strong>.</li>
+          <li>Escribe el <strong>Título</strong> de la nota.</li>
+          <li>Carga la <strong>Imagen de portada</strong> que ilustrará tu publicación en la cuadrícula de noticias.
+          </li>
+          <li><strong>Contenido:</strong> Escribe la nota completa. Puedes formatear párrafos y añadir negritas.</li>
+          <li><strong>Link / PDF:</strong> Puedes adjuntar una dirección URL externa o cargar un documento informativo
+            PDF.</li>
+          <li>Haz clic en <strong>Guardar</strong>.</li>
+        </ol>
+      </section>
+
+      <!-- 9. Comparaciones -->
+      <section class="manual-section" id="comparaciones">
+        <h2 class="section-title"><span class="material-symbols-outlined">compare_arrows</span>9. Tabla Comparativa</h2>
+        <p>Esta tabla ayuda a educar a tu clientela, mostrando las ventajas insuperables de los productos IMAGENIA
+          frente a los materiales de construcción tradicionales.</p>
+
+        <div class="screenshot-container">
+          <img src="screenshots/comparisons.png" alt="Tabla Comparativa de Beneficios">
+          <div class="screenshot-caption">Figura 9.1: Editor de propiedades comparativas.</div>
+        </div>
+
+        <p>Simplemente haz clic en el <strong>lápiz azul</strong> para cambiar las ventajas físicas (como vida útil,
+          peso, costos de mantenimiento) y haz clic en <strong>Guardar</strong>.</p>
+      </section>
+
+      <!-- 10. Logos de Clientes y Aliados -->
+      <section class="manual-section" id="clientes">
+        <h2 class="section-title"><span class="material-symbols-outlined">handshake</span>10. Logos de Clientes y
+          Aliados</h2>
+        <p>Administra las marcas aliadas que aparecen deslizándose en el carrusel de logos del pie de página para
+          generar confianza en nuevos prospectos.</p>
+
+        <div class="screenshot-container">
+          <img src="screenshots/clients.png" alt="Panel de Carrusel de Logos">
+          <div class="screenshot-caption">Figura 10.1: Tabla de marcas colaboradoras y enlaces de proyectos.</div>
+        </div>
+
+        <p>Solo necesitas cargar el nombre del cliente, subir el logo transparente en formato PNG o JPG y pulsar
+          <strong>Guardar</strong>.</p>
+      </section>
+
+      <!-- 11. Fichas de Productos -->
+      <section class="manual-section" id="productos">
+        <h2 class="section-title"><span class="material-symbols-outlined">chair</span>11. Fichas de Productos</h2>
+        <p>Esta es la sección más importante de tu catálogo. Aquí administras todos los productos que se muestran a tus
+          compradores en la galería web.</p>
+
+        <div class="screenshot-container">
+          <img src="screenshots/products.png" alt="Tabla de Catálogo de Productos">
+          <div class="screenshot-caption">Figura 11.1: Listado general de productos con estado y filtros rápidos.</div>
+        </div>
+
+        <p><strong>Cómo subir un producto nuevo al catálogo:</strong></p>
+        <ol class="steps-list">
+          <li>Presiona el botón <strong>+ Agregar producto</strong>.</li>
+          <li>Completa los campos básicos:
+            <ul>
+              <li><strong>Nombre:</strong> El nombre de comercialización (ej: "Banca Urbana Forest").</li>
+              <li><strong>SKU:</strong> Código de identificación interna para inventarios.</li>
+              <li><strong>Slug:</strong> Identificador único para el enlace del producto (se genera automáticamente al
+                escribir el nombre, no lleva espacios).</li>
+              <li><strong>Categoría:</strong> Asígnale la familia a la que pertenece para que los clientes lo encuentren
+                fácilmente en su sección.</li>
+            </ul>
+          </li>
+          <li><strong>Imágenes:</strong> Carga la <strong>Imagen Principal</strong> (que se verá en las portadas) y
+            luego haz clic en <strong>Agregar a la galería</strong> para subir hasta 10 fotos alternativas.</li>
+          <li><strong>Etiquetas de estado:</strong> Marca las casillas opcionales si deseas destacar el producto:
+            <ul>
+              <li><strong>Destacado:</strong> El producto aparecerá en las posiciones recomendadas principales.</li>
+              <li><strong>Novedad:</strong> Se le colocará una insignia de producto recién ingresado.</li>
+              <li><strong>Más Vendido:</strong> Resalta el producto como el favorito de tu catálogo.</li>
+            </ul>
+          </li>
+          <li>Haz clic en <strong>Guardar</strong>.</li>
+        </ol>
+      </section>
+
+      <!-- 12. Categorías -->
+      <section class="manual-section" id="categorias">
+        <h2 class="section-title"><span class="material-symbols-outlined">category</span>12. Categorías del Catálogo
+        </h2>
+        <p>Divide tus productos por familias lógicas (ej: Macetas, Bancas, Muebles de Exterior).</p>
+
+        <div class="screenshot-container">
+          <img src="screenshots/categories.png" alt="Actualización de Categorías">
+          <div class="screenshot-caption">Figura 12.1: Gestión de familias de productos, orden e iconos personalizados.
+          </div>
+        </div>
+
+        <p><strong>Configuración de Categorías:</strong></p>
+        <ul>
+          <li>Puedes asignarles un icono visual escribiendo su nombre exacto en inglés del catálogo de <em>Google
+              Fonts</em>. El panel te brindará un botón directo para buscar la lista completa en línea.</li>
+          <li>En el bloque inferior del panel, puedes elegir cuáles <strong>4 Categorías Destacadas</strong> se
+            mostrarán en la portada principal de la web y guardar dicho orden.</li>
+        </ul>
+      </section>
+
+      <!-- 13. Tags e Filtros de Búsqueda -->
+      <section class="manual-section" id="filtros">
+        <h2 class="section-title"><span class="material-symbols-outlined">label</span>13. Tags e Filtros de Búsqueda
+        </h2>
+        <p>Permite que tus clientes filtren la galería de productos por especificaciones físicas (como colores, acabados
+          o materiales).</p>
+
+        <div class="screenshot-container">
+          <img src="screenshots/tags.png" alt="Gestión de Tags y Grupos de Filtros">
+          <div class="screenshot-caption">Figura 13.1: Creación de tags organizados por grupos de filtrado.</div>
+        </div>
+
+        <p>Esta sección se divide en:</p>
+        <ol class="steps-list">
+          <li><strong>Grupo de filtros:</strong> La categoría de búsqueda global (ej: "Colores" o "Materiales").</li>
+          <li><strong>Tags:</strong> Las etiquetas individuales dentro de ese grupo (ej: "Verde", "Gris", "Plástico
+            reciclado").</li>
+        </ol>
+      </section>
+
+      <!-- 14. Catálogos PDF -->
+      <section class="manual-section" id="catalogos">
+        <h2 class="section-title"><span class="material-symbols-outlined">menu_book</span>14. Catálogos PDF</h2>
+        <p>Actualiza los folletos digitales completos que tus clientes corporativos pueden descargar directamente de la
+          web.</p>
+
+        <div class="screenshot-container">
+          <img src="screenshots/catalogs.png" alt="Catálogos PDFs Subidos">
+          <div class="screenshot-caption">Figura 14.1: Tabla de documentos adjuntos listos para descarga.</div>
+        </div>
+
+        <p>Haz clic en <strong>+ Agregar catálogo</strong>, introduce el título, el año, sube una imagen de portada
+          atractiva y carga el documento en formato <strong>PDF</strong>. El sistema se encargará de hospedar tu archivo
+          en la nube automáticamente.</p>
+      </section>
+
+      <!-- 15. Mensajes Recibidos -->
+      <section class="manual-section" id="mensajes">
+        <h2 class="section-title"><span class="material-symbols-outlined">mail</span>15. Mensajes de Contacto</h2>
+        <p>En este apartado puedes consultar todos los correos e inquietudes enviadas por tus visitantes desde el
+          formulario de contacto oficial.</p>
+
+        <div class="screenshot-container">
+          <img src="screenshots/contacts.png" alt="Bandeja de Mensajes de Contacto">
+          <div class="screenshot-caption">Figura 15.1: Buzón de solicitudes del sitio web.</div>
+        </div>
+
+        <p>La tabla te muestra a detalle quién te escribe, su número telefónico, la empresa que representa y sus
+          comentarios textuales en orden cronológico.</p>
+      </section>
+
+      <!-- 16. Chat y Leads de WhatsApp -->
+      <section class="manual-section" id="wa-preguntas">
+        <h2 class="section-title"><span class="material-symbols-outlined">quiz</span>16. Configuración de WhatsApp</h2>
+        <p>El chat de ayuda de tu sitio web no es un botón simple; es un widget interactivo inteligente que ayuda a
+          calificar clientes.</p>
+
+        <div class="screenshot-container">
+          <img src="screenshots/wa_questions.png" alt="Preguntas de WhatsApp">
+          <div class="screenshot-caption">Figura 16.1: Flujo de preguntas que responde el cliente antes de ser
+            redirigido.</div>
+        </div>
+
+        <p><strong>¿Cómo funciona?</strong></p>
+        <p>El cliente hace clic en el globo de chat y responde una secuencia de preguntas automatizadas cortas (ej:
+          "¿Cómo te llamas?", "¿Qué producto te interesa?"). Al terminar, estas respuestas se copian en su mensaje de
+          WhatsApp para que cuando te escriba ya conozcas sus necesidades principales.</p>
+      </section>
+
+      <!-- 17. Leads y Base de Datos (WhatsApp) -->
+      <section class="manual-section" id="wa-leads">
+        <h2 class="section-title"><span class="material-symbols-outlined">contacts</span>17. Prospectos (Leads) de
+          WhatsApp</h2>
+        <p>Cada vez que un cliente inicia una conversación en tu widget de WhatsApp, sus respuestas y datos se guardan
+          en el panel para que no pierdas ningún prospecto.</p>
+
+        <div class="screenshot-container">
+          <img src="screenshots/wa_leads.png" alt="Tabla de Prospectos de WhatsApp">
+          <div class="screenshot-caption">Figura 17.1: Base de prospectos capturados a través del chat de la web.</div>
+        </div>
+
+        <p><strong>Exportar tus prospectos a Excel:</strong></p>
+        <ol class="steps-list">
+          <li>Ingresa a la sección <strong>Leads capturados</strong> en el menú lateral.</li>
+          <li>Haz clic en el botón <strong>Exportar CSV</strong> ubicado en la parte superior derecha de la tabla.</li>
+          <li>Se descargará un archivo que puedes abrir directamente en Microsoft Excel para realizar cotizaciones,
+            envíos de correo masivo o campañas de seguimiento.</li>
+        </ol>
+      </section>
+
+      <!-- 18. Panel de Leads (Acceso Restringido) -->
+      <section class="manual-section" id="leads-panel">
+        <h2 class="section-title"><span class="material-symbols-outlined">analytics</span>18. Panel de Leads (Acceso Restringido)</h2>
+        <p>El sistema cuenta con un panel alternativo simplificado accesible desde la dirección <code>/leads-admin/</code>. Este panel está diseñado exclusivamente para perfiles de usuario con el rol de <strong>Visualizador de Leads (leads_viewer)</strong>.</p>
+        <p>Su propósito es permitir que personal del área comercial o de ventas acceda a consultar y descargar prospectos sin tener permisos para modificar la configuración de la página web, productos, blogs o textos.</p>
+
+        <div class="screenshot-container">
+          <img src="screenshots/leads_dashboard.png" alt="Dashboard del Panel de Leads">
+          <div class="screenshot-caption">Figura 18.1: Interfaz principal del Panel de Leads simplificado.</div>
+        </div>
+
+        <p><strong>Características del Panel de Leads:</strong></p>
+        <ul>
+          <li><strong>Dashboard simplificado:</strong> Muestra un resumen rápido con el total de mensajes de contacto y prospectos de WhatsApp acumulados, junto con una tabla de actividad muy reciente.</li>
+          <li><strong>Acceso de solo lectura:</strong> Permite visualizar los mensajes recibidos y leads de WhatsApp, realizar búsquedas y exportar la información a formato Excel (CSV).</li>
+          <li><strong>Seguridad de Datos:</strong> No contiene opciones de edición, eliminación de productos, ni configuraciones críticas de la marca, previniendo alteraciones accidentales en el sitio web.</li>
+        </ul>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // Resaltar elemento activo en la navegación al hacer scroll
+    window.addEventListener('scroll', () => {
+      const sections = document.querySelectorAll('.manual-section, .cover-page');
+      const navItems = document.querySelectorAll('.manual-nav-item');
+
+      let currentSectionId = '';
+      sections.forEach(sec => {
+        const top = sec.offsetTop;
+        const height = sec.offsetHeight;
+        if (window.scrollY >= top - 150) {
+          currentSectionId = sec.getAttribute('id') || '';
+        }
+      });
+
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        const link = item.querySelector('a');
+        if (link && link.getAttribute('href') === '#' + currentSectionId) {
+          item.classList.add('active');
+        }
+      });
+    });
+  </script>
+
+</body>
+
+</html>
