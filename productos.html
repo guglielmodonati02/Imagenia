@@ -32,6 +32,34 @@
     .qv-thumb.active { border-color: var(--primary) !important; }
     .lightbox-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:400; align-items:center; justify-content:center; }
     .lightbox-modal.open { display:flex; }
+
+    /* Quick View Modal Responsive Layout */
+    .qv-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; }
+    .qv-media-container { display:flex; flex-direction:column; gap:0.75rem; }
+    .qv-gallery-container { display:none; gap:0.5rem; overflow-x:auto; padding-bottom:0.25rem; }
+    @media(max-width:767px){
+      .qv-grid { grid-template-columns:1fr; gap:1.5rem; }
+      .qv-media-container { flex-direction:row-reverse; align-items:flex-start; }
+      #qv-image { flex:1; }
+      .qv-gallery-container {
+        flex-direction:column !important;
+        overflow-y:auto !important;
+        overflow-x:hidden !important;
+        max-height:280px;
+        width:50px;
+        flex-shrink:0;
+        padding-bottom:0;
+        padding-right:0.25rem;
+      }
+      .qv-gallery-container::-webkit-scrollbar {
+        width:3px;
+      }
+      .qv-gallery-container::-webkit-scrollbar-thumb {
+        background:var(--outline-variant);
+        border-radius:99px;
+      }
+      .qv-thumb { width:45px !important; height:45px !important; }
+    }
   </style>
 </head>
 <body>
@@ -112,10 +140,10 @@
         <button class="modal-close" onclick="closeModal()"><span class="material-symbols-outlined">close</span></button>
       </div>
       <div class="modal-body">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
-          <div style="display:flex; flex-direction:column; gap:0.75rem;">
+        <div class="qv-grid">
+          <div class="qv-media-container">
             <div style="aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;background:var(--surface-container-low);cursor:zoom-in;display:flex;align-items:center;justify-content:center;" id="qv-image" onclick="openLightbox()"></div>
-            <div id="qv-gallery" style="display:none; gap:0.5rem; overflow-x:auto; padding-bottom:0.25rem;"></div>
+            <div id="qv-gallery" class="qv-gallery-container"></div>
           </div>
           <div>
             <div id="qv-category" class="card-tag mb-2" style="display: none;"></div>
@@ -135,9 +163,12 @@
   </div>
 
   <!-- Lightbox Modal -->
-  <div class="lightbox-modal" id="lightbox-modal" onclick="closeLightbox()">
-    <button class="modal-close" style="position:absolute;top:1.5rem;right:1.5rem;color:#fff;background:none;border:none;cursor:pointer;" onclick="closeLightbox()"><span class="material-symbols-outlined" style="font-size:2rem">close</span></button>
-    <img id="lightbox-img" src="" style="max-width:90%;max-height:90%;object-fit:contain;border-radius:var(--radius-sm)">
+  <div class="lightbox-modal" id="lightbox-modal">
+    <div style="position:absolute;inset:0;z-index:400;" onclick="closeLightbox()"></div>
+    <button class="modal-close" style="position:absolute;top:1.5rem;right:1.5rem;color:#fff;background:none;border:none;cursor:pointer;z-index:410;" onclick="closeLightbox()"><span class="material-symbols-outlined" style="font-size:2rem">close</span></button>
+    <button class="slider-btn" style="position:absolute;left:1.5rem;top:50%;transform:translateY(-50%);z-index:410;display:none;" id="lb-prev" onclick="lightboxPrev(event)"><span class="material-symbols-outlined">chevron_left</span></button>
+    <button class="slider-btn" style="position:absolute;right:1.5rem;top:50%;transform:translateY(-50%);z-index:410;display:none;" id="lb-next" onclick="lightboxNext(event)"><span class="material-symbols-outlined">chevron_right</span></button>
+    <img id="lightbox-img" src="" style="max-width:90%;max-height:90%;object-fit:contain;border-radius:var(--radius-sm);position:relative;z-index:405;">
   </div>
 
   <script type="module" src="/js/productos.js"></script>

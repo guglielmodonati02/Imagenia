@@ -10,6 +10,8 @@ let allTagGroups = [];
 let searchQuery = '';
 let totalCount = 0;
 let siteSettings = {};
+let currentLightboxGallery = [];
+let currentLightboxIndex = 0;
 
 async function init() {
   siteSettings = await initPage('Productos');
@@ -310,6 +312,7 @@ window.openQuickView = function(p) {
     });
   }
   const finalGallery = galleryImages.slice(0, 10);
+  currentLightboxGallery = finalGallery;
   
   // Render main image
   const mainImgUrl = finalGallery[0] || '';
@@ -388,10 +391,37 @@ window.openLightbox = function() {
   const lightboxModal = document.getElementById('lightbox-modal');
   
   if (lightboxImg && lightboxModal) {
-    lightboxImg.src = mainImg.src;
+    currentLightboxIndex = currentLightboxGallery.findIndex(url => mainImg.src.includes(url));
+    if (currentLightboxIndex === -1) currentLightboxIndex = 0;
+    lightboxImg.src = currentLightboxGallery[currentLightboxIndex] || mainImg.src;
+
+    const prevBtn = document.getElementById('lb-prev');
+    const nextBtn = document.getElementById('lb-next');
+    if (currentLightboxGallery.length > 1) {
+      if (prevBtn) prevBtn.style.display = 'flex';
+      if (nextBtn) nextBtn.style.display = 'flex';
+    } else {
+      if (prevBtn) prevBtn.style.display = 'none';
+      if (nextBtn) nextBtn.style.display = 'none';
+    }
+
     lightboxModal.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
+};
+
+window.lightboxPrev = function(e) {
+  if (e) e.stopPropagation();
+  if (currentLightboxGallery.length <= 1) return;
+  currentLightboxIndex = (currentLightboxIndex - 1 + currentLightboxGallery.length) % currentLightboxGallery.length;
+  document.getElementById('lightbox-img').src = currentLightboxGallery[currentLightboxIndex];
+};
+
+window.lightboxNext = function(e) {
+  if (e) e.stopPropagation();
+  if (currentLightboxGallery.length <= 1) return;
+  currentLightboxIndex = (currentLightboxIndex + 1) % currentLightboxGallery.length;
+  document.getElementById('lightbox-img').src = currentLightboxGallery[currentLightboxIndex];
 };
 
 window.closeLightbox = function() {
@@ -412,6 +442,56 @@ window.cotizar = function(name, sku = '') {
   const message = `Hola IMAGENIA, me gustaría recibir más información sobre el producto ${decName}${skuText}.`;
   window.open(`https://wa.me/${num}?text=${encodeURIComponent(message)}`, '_blank');
 };
+
+// Lightbox swipe and wheel navigation
+const lightboxEl = document.getElementById('lightbox-modal');
+if (lightboxEl) {
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchEndX = 0;
+  let touchEndY = 0;
+
+  lightboxEl.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+
+  lightboxEl.addEventListener('touchend', e => {
+    touchEndX = e.changedTouches[0].screenX;
+    touchEndY = e.changedTouches[0].screenY;
+    
+    if (currentLightboxGallery.length <= 1) return;
+    
+    const diffX = touchEndX - touchStartX;
+    const diffY = touchEndY - touchStartY;
+    
+    // Swipe horizontal (horizontal distance must be greater than vertical and exceed threshold)
+    if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+      if (diffX > 0) {
+        window.lightboxPrev();
+      } else {
+        window.lightboxNext();
+      }
+    }
+  }, { passive: true });
+
+  let lastWheelTime = 0;
+  lightboxEl.addEventListener('wheel', e => {
+    if (currentLightboxGallery.length <= 1) return;
+    
+    e.preventDefault();
+    const now = Date.now();
+    if (now - lastWheelTime < 300) return;
+    
+    if (e.deltaY > 0 || e.deltaX > 0) {
+      window.lightboxNext();
+      lastWheelTime = now;
+    } else if (e.deltaY < 0 || e.deltaX < 0) {
+      window.lightboxPrev();
+      lastWheelTime = now;
+    }
+  }, { passive: false });
+}
 
 document.getElementById('qv-modal')?.addEventListener('click', e => { if (e.target.id === 'qv-modal') closeModal(); });
 
