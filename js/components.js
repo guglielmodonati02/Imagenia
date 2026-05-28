@@ -143,7 +143,7 @@ export function renderFooter(settings = {}, impactStats = []) {
       <div class="footer-top" style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:1.5rem; margin-bottom:4rem; padding-bottom:3rem; border-bottom:1px solid rgba(255,255,255,0.08)">
         <div style="max-width:600px">
           <div class="footer-logo">
-            <img src="/assets/logo_con_letras_blancas.png" alt="IMAGENIA">
+            <img src="/assets/logo_con_letras_blancas.png" alt="IMAGENIA" style="height: 180px; max-width: 420px;">
           </div>
           <p class="footer-tagline" style="margin-top:0.5rem">${settings.footer_tagline || 'Ingeniería sustentable para espacios que perduran.'}</p>
         </div>
