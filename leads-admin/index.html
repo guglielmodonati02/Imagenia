@@ -58,9 +58,7 @@
       <button class="admin-nav-item" onclick="showSection('contacts',this)">
         <span class="material-symbols-outlined">mail</span>Mensajes
       </button>
-      <button class="admin-nav-item" onclick="showSection('quotes',this)">
-        <span class="material-symbols-outlined">request_quote</span>Cotizaciones
-      </button>
+
       <button class="admin-nav-item" onclick="showSection('wa-leads',this)">
         <span class="material-symbols-outlined">contacts</span>Leads WhatsApp
       </button>
@@ -81,15 +79,12 @@
     <!-- Dashboard -->
     <div id="sec-dashboard" class="tab-sections visible">
       <div class="admin-header"><h1>Dashboard de Leads</h1></div>
-      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+      <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-value" id="stat-contacts">—</div>
           <div class="stat-label">Mensajes de Contacto</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-value" id="stat-quotes">—</div>
-          <div class="stat-label">Cotizaciones</div>
-        </div>
+
         <div class="stat-card">
           <div class="stat-value" id="stat-wa-leads">—</div>
           <div class="stat-label">Leads de WhatsApp</div>
@@ -146,34 +141,7 @@
       </div>
     </div>
 
-    <!-- Cotizaciones -->
-    <div id="sec-quotes" class="tab-sections">
-      <div class="admin-header">
-        <h1>Cotizaciones</h1>
-      </div>
-      <div class="search-export-bar">
-        <input type="text" class="search-input" id="search-quotes" placeholder="Buscar cotizaciones...">
-        <button class="btn btn-secondary btn-sm" onclick="exportQuotes()">
-          <span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle;margin-right:0.25rem">download</span>Exportar CSV
-        </button>
-      </div>
-      <div class="panel">
-        <div style="overflow-x:auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Tipo de Proyecto</th>
-                <th>Fecha</th>
-                <th style="width:50px"></th>
-              </tr>
-            </thead>
-            <tbody id="quotes-table"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+
 
     <!-- WhatsApp Leads -->
     <div id="sec-wa-leads" class="tab-sections">

@@ -18,7 +18,7 @@ async function init() {
   renderCounter('counter-section', settings);
   initCounter();
 
-  document.getElementById('cta-form')?.addEventListener('submit', handleCTAForm);
+
 }
 
 /* ── Hero ──────────────────────────────────────────────────── */
@@ -235,24 +235,6 @@ async function loadComparison(s) {
 function loadCTA(s) {
   setText('cta-title', s.impacto_cta_title || '¿Listo para construir un legado sustentable?');
   setText('cta-text',  s.impacto_cta_text  || '');
-}
-
-/* ── CTA Form ──────────────────────────────────────────────── */
-async function handleCTAForm(e) {
-  e.preventDefault();
-  const btn = document.getElementById('cta-submit');
-  btn.textContent = 'Enviando...';
-  btn.disabled = true;
-  const { error } = await supabase.from('quote_submissions').insert({
-    nombre:        document.getElementById('cta-nombre').value,
-    email:         document.getElementById('cta-email').value,
-    tipo_proyecto: document.getElementById('cta-tipo').value,
-  });
-  btn.textContent = 'Solicitar Asesoría';
-  btn.disabled = false;
-  if (error) { showToast('Error al enviar. Inténtalo de nuevo.', 'error'); return; }
-  showToast('¡Solicitud enviada! Te contactaremos pronto.');
-  e.target.reset();
 }
 
 /* ── Utility ───────────────────────────────────────────────── */

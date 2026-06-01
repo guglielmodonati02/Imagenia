@@ -871,13 +871,6 @@ window.deleteCatalog = async function(id, title) {
 };
 
 // ── Submissions ──────────────────────────────────────────────
-async function quotes() {
-  const { data } = await supabase.from('quote_submissions').select('*').order('submitted_at',{ascending:false});
-  document.getElementById('quotes-table').innerHTML = (data||[]).map(r =>
-    `<tr><td>${r.nombre}</td><td><a href="mailto:${r.email}">${r.email}</a></td><td>${r.tipo_proyecto||'—'}</td><td>${fmt(r.submitted_at)}</td></tr>`
-  ).join('') || '<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--on-surface-variant)">Sin cotizaciones aún.</td></tr>';
-}
-
 async function contacts() {
   const { data } = await supabase.from('contact_submissions').select('*').order('submitted_at',{ascending:false});
   document.getElementById('contacts-table').innerHTML = (data||[]).map(r =>
