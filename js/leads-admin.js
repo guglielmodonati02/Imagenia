@@ -1,9 +1,9 @@
 // js/leads-admin.js
 import { requireLeadsAuth, signOut, supabase } from '/js/supabase.js';
 import { showToast } from '/js/components.js';
-
 let allContacts = [];
 let allWALeads = [];
+let allQuotes = [];
 
 async function init() {
   await requireLeadsAuth();
@@ -22,6 +22,7 @@ window.showSection = function(name, el) {
   const loaders = {
     dashboard: loadDashboard,
     contacts: loadContacts,
+    quotes: loadQuotes,
     'wa-leads': loadWALeads
   };
   if (loaders[name]) loaders[name]();
@@ -31,16 +32,19 @@ window.doSignOut = () => signOut();
 
 // ── Dashboard ────────────────────────────────────────────────
 async function loadDashboard() {
-  const [contactsCount, waLeadsCount] = await Promise.all([
+  const [contactsCount, quotesCount, waLeadsCount] = await Promise.all([
     supabase.from('contact_submissions').select('id', { count: 'exact', head: true }),
+    supabase.from('quote_submissions').select('id', { count: 'exact', head: true }),
     supabase.from('whatsapp_leads').select('id', { count: 'exact', head: true })
   ]);
 
   document.getElementById('stat-contacts').textContent = contactsCount.count ?? 0;
+  document.getElementById('stat-quotes').textContent = quotesCount.count ?? 0;
   document.getElementById('stat-wa-leads').textContent = waLeadsCount.count ?? 0;
 
-  const [recentContacts, recentWALeads] = await Promise.all([
+  const [recentContacts, recentQuotes, recentWALeads] = await Promise.all([
     supabase.from('contact_submissions').select('*').order('submitted_at', { ascending: false }).limit(5),
+    supabase.from('quote_submissions').select('*').order('submitted_at', { ascending: false }).limit(5),
     supabase.from('whatsapp_leads').select('*').order('created_at', { ascending: false }).limit(5)
   ]);
 
@@ -53,6 +57,15 @@ async function loadDashboard() {
       title: c.nombre,
       detail: c.email + (c.empresa ? ` (${c.empresa})` : ''),
       date: new Date(c.submitted_at)
+    });
+  });
+  (recentQuotes.data || []).forEach(q => {
+    recentItems.push({
+      type: 'Cotización',
+      badgeClass: 'badge-green',
+      title: q.nombre,
+      detail: q.email + (q.tipo_proyecto ? ` (${q.tipo_proyecto})` : ''),
+      date: new Date(q.submitted_at)
     });
   });
 
@@ -166,6 +179,76 @@ window.exportContacts = function() {
 };
 
 
+// ── Cotizaciones ─────────────────────────────────────────────
+async function loadQuotes() {
+  const { data, error } = await supabase.from('quote_submissions').select('*').order('submitted_at', { ascending: false });
+  if (error) {
+    showToast('Error al cargar cotizaciones', 'error');
+    return;
+  }
+  allQuotes = data || [];
+  renderQuotes(allQuotes);
+}
+
+function renderQuotes(list) {
+  document.getElementById('quotes-table').innerHTML = list.map(r => `
+    <tr id="row-quote-${r.id}">
+      <td><strong>${r.nombre}</strong></td>
+      <td><a href="mailto:${r.email}">${r.email}</a></td>
+      <td>${r.tipo_proyecto || '—'}</td>
+      <td style="white-space:nowrap;font-size:0.8rem">${fmt(r.submitted_at)}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-icon-sm btn-del" onclick="deleteQuote('${r.id}')">
+            <span class="material-symbols-outlined" style="font-size:1rem">delete</span>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--on-surface-variant)">Sin cotizaciones.</td></tr>';
+}
+
+window.deleteQuote = async function(id) {
+  if (!confirm('¿Eliminar esta cotización?')) return;
+  const { error } = await supabase.from('quote_submissions').delete().eq('id', id);
+  if (error) {
+    showToast('Error al eliminar', 'error');
+  } else {
+    showToast('Cotización eliminada');
+    allQuotes = allQuotes.filter(c => c.id !== id);
+    renderQuotes(allQuotes);
+    loadDashboard();
+  }
+};
+
+window.exportQuotes = function() {
+  const query = document.getElementById('search-quotes')?.value.toLowerCase().trim() || '';
+  const list = query ? allQuotes.filter(c => 
+    (c.nombre || '').toLowerCase().includes(query) ||
+    (c.email || '').toLowerCase().includes(query) ||
+    (c.tipo_proyecto || '').toLowerCase().includes(query)
+  ) : allQuotes;
+
+  if (!list.length) {
+    showToast('No hay datos para exportar', 'error');
+    return;
+  }
+
+  const headers = ['Nombre', 'Email', 'Tipo de Proyecto', 'Fecha'];
+  const csvRows = [headers.join(',')];
+
+  list.forEach(r => {
+    const row = [
+      `"${(r.nombre || '').replace(/"/g, '""')}"`,
+      `"${(r.email || '').replace(/"/g, '""')}"`,
+      `"${(r.tipo_proyecto || '').replace(/"/g, '""')}"`,
+      `"${fmt(r.submitted_at)}"`
+    ];
+    csvRows.push(row.join(','));
+  });
+
+  downloadCSV('cotizaciones.csv', csvRows.join('\n'));
+};
 
 // ── WhatsApp Leads ───────────────────────────────────────────
 async function loadWALeads() {
@@ -255,6 +338,16 @@ function initSearch() {
   });
 
 
+
+  document.getElementById('search-quotes')?.addEventListener('input', function(e) {
+    const query = e.target.value.toLowerCase().trim();
+    const filtered = allQuotes.filter(c => 
+      (c.nombre || '').toLowerCase().includes(query) ||
+      (c.email || '').toLowerCase().includes(query) ||
+      (c.tipo_proyecto || '').toLowerCase().includes(query)
+    );
+    renderQuotes(filtered);
+  });
 
   document.getElementById('search-wa-leads')?.addEventListener('input', function(e) {
     const query = e.target.value.toLowerCase().trim();
