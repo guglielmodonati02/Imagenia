@@ -141,7 +141,7 @@ export const Cart = {
     
     let num = '529842112951'; 
     if (window.siteSettings && window.siteSettings.whatsapp_number) {
-      num = window.siteSettings.whatsapp_number.replace(/\\D/g, '');
+      num = window.siteSettings.whatsapp_number.replace(/\D/g, '');
       if(!num) num = '529842112951';
     }
     

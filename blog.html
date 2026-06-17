@@ -1,17 +1,33 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blog — IMAGENIA</title>
-  <meta name="description" content="Lee nuestro último artículo en IMAGENIA.">
+  <meta name="description" id="meta-desc" content="Lee nuestro último artículo en IMAGENIA.">
+
+  <!-- Open Graph / Social Sharing -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" id="og-title" content="Blog — IMAGENIA">
+  <meta property="og:description" id="og-desc" content="Lee nuestro último artículo en IMAGENIA.">
+  <meta property="og:image" id="og-image" content="https://www.imagenia.com.mx/assets/logo_con_letras_blancas.png">
+  <meta property="og:url" id="og-url" content="https://www.imagenia.com.mx/blog.html">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" id="tw-title" content="Blog — IMAGENIA">
+  <meta name="twitter:description" id="tw-desc" content="Lee nuestro último artículo en IMAGENIA.">
+  <meta name="twitter:image" id="tw-image" content="https://www.imagenia.com.mx/assets/logo_con_letras_blancas.png">
+
   <link rel="icon" type="image/x-icon" href="/assets/LOGO SIN FONDO.ico">
   <link rel="stylesheet" href="/css/styles.css">
   <!-- Estilos base de Quill para que los formatos y tamaños se vean igual que en el admin -->
   <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
   <style>
+    /* Reutiliza el mismo page-header que productos.html, impacto.html, etc. */
     .blog-page {
-      padding: 9rem 2rem 6rem;
+      padding: 4rem 1rem 6rem;
       background: var(--surface);
       min-height: 80vh;
     }
@@ -58,6 +74,7 @@
     .ql-editor ul, .ql-editor ol { margin-bottom: 1.25rem; padding-left: 2rem; }
     .ql-editor li { margin-bottom: 0.5rem; }
     .ql-editor a { color: var(--secondary); text-decoration: underline; }
+    .ql-editor img { max-width: 100%; border-radius: var(--radius-md); margin: 1.5rem 0; box-shadow: var(--shadow-card); }
     .blog-content img {
       max-width: 100%;
       border-radius: var(--radius-md);
@@ -92,6 +109,14 @@
 
   <div id="nav-placeholder"></div>
 
+  <!-- Page header igual al de otras páginas (se posiciona debajo del navbar fijo) -->
+  <div class="page-header">
+    <div class="container">
+      <span class="label-sm text-secondary">Artículo</span>
+      <h1 id="blog-page-title" style="font-size:clamp(1.5rem,4vw,2.5rem);margin-top:0.5rem">Cargando...</h1>
+    </div>
+  </div>
+
   <main class="blog-page">
     <div class="container" style="max-width: 1440px;">
       <a href="/impacto.html" class="blog-back">
@@ -108,6 +133,6 @@
 
   <div id="footer-placeholder"></div>
 
-  <script type="module" src="/js/blog.js?v=1.1"></script>
+  <script type="module" src="/js/blog.js?v=1.2"></script>
 </body>
 </html>

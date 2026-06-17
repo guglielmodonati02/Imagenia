@@ -172,6 +172,9 @@
       <button class="admin-nav-item" onclick="showSection('impact',this)">
         <span class="material-symbols-outlined">eco</span>Impacto Stats
       </button>
+      <button class="admin-nav-item" onclick="showSection('home-carousel',this)">
+        <span class="material-symbols-outlined">photo_library</span>Carousel de Fotos
+      </button>
       <button class="admin-nav-item" onclick="showSection('blogs',this)">
         <span class="material-symbols-outlined">article</span>Blogs
       </button>
@@ -335,6 +338,20 @@
       <div class="panel"><div style="overflow-x:auto">
         <table><thead><tr><th>Imagen</th><th>Título</th><th>Resumen</th><th>Link / PDF</th><th>Orden</th><th>Activo</th><th></th></tr></thead>
         <tbody id="blogs-table"></tbody></table>
+      </div></div>
+    </div>
+
+    <!-- Carousel de Fotos (Home) -->
+    <div id="sec-home-carousel" class="tab-sections">
+      <div class="admin-header"><h1>Carousel de Fotos — Inicio</h1>
+        <button class="btn btn-primary btn-sm" onclick="openHCModal()">+ Agregar foto</button>
+      </div>
+      <div class="panel" style="margin-bottom:1rem;padding:0.75rem 1.5rem;background:var(--surface-container-low);border-radius:var(--radius-md)">
+        <p style="font-size:0.85rem;color:var(--on-surface-variant)">📸 Hasta <strong>7 fotos</strong>. Aparecen en la sección central del home con autoplay. Puedes agregar título, subtítulo y un enlace opcional en cada foto.</p>
+      </div>
+      <div class="panel"><div style="overflow-x:auto">
+        <table><thead><tr><th>Foto</th><th>Título</th><th>Subtítulo</th><th>Link</th><th>Orden</th><th>Activa</th><th></th></tr></thead>
+        <tbody id="home-carousel-table"></tbody></table>
       </div></div>
     </div>
 
@@ -813,6 +830,41 @@
         <div style="display:flex;gap:1rem;justify-content:flex-end">
           <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-impact')">Cancelar</button>
           <button class="btn btn-primary btn-sm" onclick="saveImpact()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Home Carousel Modal -->
+  <div class="modal-overlay" id="modal-hc">
+    <div class="modal" style="max-width:560px">
+      <div class="modal-header">
+        <h3 id="hc-modal-title">Foto del Carousel</h3>
+        <button class="modal-close" onclick="closeModal('modal-hc')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="hc-id">
+        <div class="form-group">
+          <label class="form-label">Imagen *</label>
+          <div style="display:flex;gap:0.75rem;align-items:center">
+            <input type="url" class="form-input" id="hc-image" placeholder="URL de imagen">
+            <label class="btn btn-secondary btn-sm upload-btn">
+              <span class="material-symbols-outlined" style="font-size:1rem">upload</span> Subir
+              <input type="file" accept="image/*" onchange="uploadHCImage(this)">
+            </label>
+          </div>
+          <div id="hc-img-preview" style="margin-top:0.75rem"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Título (opcional)</label><input type="text" class="form-input" id="hc-title" placeholder="Ej: Hotel Paraíso"></div>
+        <div class="form-group"><label class="form-label">Subtítulo (opcional)</label><input type="text" class="form-input" id="hc-subtitle" placeholder="Terraza exterior con vista al mar"></div>
+        <div class="form-group"><label class="form-label">Enlace al hacer clic (opcional)</label><input type="url" class="form-input" id="hc-link" placeholder="/productos.html"></div>
+        <div class="form-group"><label class="form-label">Orden</label><input type="number" class="form-input" id="hc-order" value="0" style="max-width:100px"></div>
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;margin-bottom:1.5rem">
+          <input type="checkbox" id="hc-active" checked style="accent-color:var(--primary)"> Activa
+        </label>
+        <div style="display:flex;gap:1rem;justify-content:flex-end">
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-hc')">Cancelar</button>
+          <button class="btn btn-primary btn-sm" onclick="saveHC()">Guardar</button>
         </div>
       </div>
     </div>

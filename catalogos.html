@@ -5,7 +5,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catálogos — IMAGENIA</title>
-  <meta name="description" content="Descarga los catálogos de muebles de exterior IMAGENIA en formato PDF.">
+  <meta name="description" content="Descarga los catálogos de muebles sustentables de IMAGENIA en formato PDF.">
+
+  <!-- Open Graph / Social Sharing -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Catálogos — IMAGENIA">
+  <meta property="og:description" content="Descarga los catálogos de muebles sustentables de IMAGENIA en formato PDF.">
+  <meta property="og:image" content="https://www.imagenia.com.mx/assets/logo_con_letras_blancas.png">
+  <meta property="og:url" content="https://www.imagenia.com.mx/catalogos.html">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Catálogos — IMAGENIA">
+  <meta name="twitter:description" content="Descarga los catálogos de muebles sustentables de IMAGENIA en formato PDF.">
+  <meta name="twitter:image" content="https://www.imagenia.com.mx/assets/logo_con_letras_blancas.png">
+
   <link rel="icon" type="image/x-icon" href="/assets/LOGO SIN FONDO.ico">
   <link rel="stylesheet" href="/css/styles.css?v=1.11">
   <style>
@@ -31,15 +45,15 @@
       grid-column: 1 / -1;
       min-height: 460px;
     }
-    
+
     .catalog-card:not(:first-child) {
       min-height: 250px;
     }
-    
+
     .catalog-card:not(:first-child) .catalog-title {
       font-size: 2rem;
     }
-    
+
     .catalog-card:not(:first-child) .catalog-info {
       padding: 2rem;
     }
@@ -160,6 +174,7 @@
       .catalog-grid {
         grid-template-columns: 1fr;
       }
+
       .catalog-card:first-child,
       .catalog-card:not(:first-child) {
         grid-column: 1 / -1;
@@ -204,9 +219,11 @@
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
     }
+
     .catalog-selectors::-webkit-scrollbar {
       display: none;
     }
+
     .catalog-selector-chip {
       background: var(--surface-container-high);
       color: var(--on-surface);
@@ -220,15 +237,17 @@
       white-space: nowrap;
       transition: all var(--transition);
     }
+
     .catalog-selector-chip:hover {
       background: var(--primary);
       color: var(--on-primary);
       border-color: var(--primary);
     }
+
     .catalog-card.highlight {
       transform: scale(1.03) !important;
       z-index: 10;
-      box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 2px var(--primary);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 0 2px var(--primary);
       border: 2px solid var(--primary);
       filter: brightness(1.15);
     }

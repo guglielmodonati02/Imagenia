@@ -45,8 +45,33 @@ async function init() {
       return;
     }
     
-    // Set page title for SEO
+    // Set page title for SEO + page-header
     document.title = `${blog.title} — IMAGENIA`;
+    const pageHeaderTitle = document.getElementById('blog-page-title');
+    if (pageHeaderTitle) pageHeaderTitle.textContent = blog.title;
+
+    // Update dynamic SEO & OG tags
+    const metaDesc = document.getElementById('meta-desc');
+    const ogTitle = document.getElementById('og-title');
+    const ogDesc = document.getElementById('og-desc');
+    const ogImage = document.getElementById('og-image');
+    const ogUrl = document.getElementById('og-url');
+    const twTitle = document.getElementById('tw-title');
+    const twDesc = document.getElementById('tw-desc');
+    const twImage = document.getElementById('tw-image');
+
+    const blogDesc = blog.summary || `Artículo IMAGENIA: ${blog.title}`;
+    const blogTitle = `${blog.title} — IMAGENIA`;
+    const blogImg = blog.image_url || 'https://www.imagenia.com.mx/assets/logo_con_letras_blancas.png';
+
+    if (metaDesc) metaDesc.content = blogDesc;
+    if (ogTitle) ogTitle.content = blogTitle;
+    if (ogDesc) ogDesc.content = blogDesc;
+    if (ogImage) ogImage.content = blogImg;
+    if (ogUrl) ogUrl.content = window.location.href;
+    if (twTitle) twTitle.content = blogTitle;
+    if (twDesc) twDesc.content = blogDesc;
+    if (twImage) twImage.content = blogImg;
 
     // Render Blog Content
     let extraMedia = '';

@@ -1,68 +1,248 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Productos — IMAGENIA</title>
-  <meta name="description" content="Explora toda la colección de muebles de exterior IMAGENIA. Filtra por tipo, color, material y más.">
+  <meta name="description"
+    content="Explora toda la colección de muebles sustentables IMAGENIA. Filtra por tipo, color, material y más.">
+
+  <!-- Open Graph / Social Sharing -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Productos — IMAGENIA">
+  <meta property="og:description" content="Explora toda la colección de muebles sustentables IMAGENIA. Filtra por tipo, color, material y más.">
+  <meta property="og:image" content="https://www.imagenia.com.mx/assets/logo_con_letras_blancas.png">
+  <meta property="og:url" content="https://www.imagenia.com.mx/productos.html">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Productos — IMAGENIA">
+  <meta name="twitter:description" content="Explora toda la colección de muebles sustentables IMAGENIA. Filtra por tipo, color, material y más.">
+  <meta name="twitter:image" content="https://www.imagenia.com.mx/assets/logo_con_letras_blancas.png">
+
   <link rel="icon" type="image/x-icon" href="/assets/LOGO SIN FONDO.ico">
   <link rel="stylesheet" href="/css/styles.css?v=1.1">
   <style>
-    .products-layout { display:flex; gap:2.5rem; align-items:flex-start; }
-    .filters-sidebar { width:240px; flex-shrink:0; position:sticky; top:6rem; }
-    .filter-clear { background:none;border:none;color:var(--secondary);font-size:0.8rem;font-weight:600;cursor:pointer;padding:0;margin-left:auto; }
-    .products-main { flex:1;min-width:0; }
-    .products-toolbar { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem; }
-    .products-count { font-size:0.875rem;color:var(--on-surface-variant); }
-    .sort-select { background:var(--surface-container-low);border:none;border-radius:var(--radius-sm);padding:0.5rem 1rem;font-family:'Manrope',sans-serif;font-weight:600;font-size:0.85rem;color:var(--on-surface);cursor:pointer; }
-    .mobile-filter-btn { display:none; }
-    @media(max-width:900px){
-      .filters-sidebar { display:none;position:fixed;top:0;left:0;bottom:0;z-index:300;background:var(--surface);padding:2rem;overflow-y:auto;width:280px;box-shadow:4px 0 24px rgba(27,28,28,0.12);transition:transform var(--transition); }
-      .filters-sidebar.mobile-open { display:block; }
-      .mobile-filter-btn { display:flex; }
+    .products-layout {
+      display: flex;
+      gap: 2.5rem;
+      align-items: flex-start;
     }
-    .filter-overlay { display:none;position:fixed;inset:0;background:rgba(27,28,28,0.4);z-index:299; }
-    .filter-overlay.open { display:block; }
-    .no-products { text-align:center;padding:5rem 2rem;grid-column:1/-1; }
-    .no-products .material-symbols-outlined { font-size:4rem;color:var(--outline-variant);display:block;margin-bottom:1rem; }
-    .filter-group-toggle { cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none; }
-    .filter-group-body { overflow:hidden;transition:max-height 0.3s ease; }
-    .filter-group-body.collapsed { max-height:0; }
-    .qv-thumb { border-radius: var(--radius-sm); border: 2px solid var(--outline-variant); cursor: pointer; flex-shrink: 0; transition: border-color 0.2s, transform 0.2s; }
-    .qv-thumb:hover { transform: scale(1.05); }
-    .qv-thumb.active { border-color: var(--primary) !important; }
-    .lightbox-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:400; align-items:center; justify-content:center; }
-    .lightbox-modal.open { display:flex; }
+
+    .filters-sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 6rem;
+    }
+
+    .filter-clear {
+      background: none;
+      border: none;
+      color: var(--secondary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+      margin-left: auto;
+    }
+
+    .products-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .products-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .products-count {
+      font-size: 0.875rem;
+      color: var(--on-surface-variant);
+    }
+
+    .sort-select {
+      background: var(--surface-container-low);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 1rem;
+      font-family: 'Manrope', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--on-surface);
+      cursor: pointer;
+    }
+
+    .mobile-filter-btn {
+      display: none;
+    }
+
+    @media(max-width:900px) {
+      .filters-sidebar {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 300;
+        background: var(--surface);
+        padding: 2rem;
+        overflow-y: auto;
+        width: 280px;
+        box-shadow: 4px 0 24px rgba(27, 28, 28, 0.12);
+        transition: transform var(--transition);
+      }
+
+      .filters-sidebar.mobile-open {
+        display: block;
+      }
+
+      .mobile-filter-btn {
+        display: flex;
+      }
+    }
+
+    .filter-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(27, 28, 28, 0.4);
+      z-index: 299;
+    }
+
+    .filter-overlay.open {
+      display: block;
+    }
+
+    .no-products {
+      text-align: center;
+      padding: 5rem 2rem;
+      grid-column: 1/-1;
+    }
+
+    .no-products .material-symbols-outlined {
+      font-size: 4rem;
+      color: var(--outline-variant);
+      display: block;
+      margin-bottom: 1rem;
+    }
+
+    .filter-group-toggle {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+    }
+
+    .filter-group-body {
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .filter-group-body.collapsed {
+      max-height: 0;
+    }
+
+    .qv-thumb {
+      border-radius: var(--radius-sm);
+      border: 2px solid var(--outline-variant);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .qv-thumb:hover {
+      transform: scale(1.05);
+    }
+
+    .qv-thumb.active {
+      border-color: var(--primary) !important;
+    }
+
+    .lightbox-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 400;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-modal.open {
+      display: flex;
+    }
 
     /* Quick View Modal Responsive Layout */
-    .qv-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; }
-    .qv-media-container { display:flex; flex-direction:column; gap:0.75rem; }
-    .qv-gallery-container { display:none; gap:0.5rem; overflow-x:auto; padding-bottom:0.25rem; }
-    @media(max-width:767px){
-      .qv-grid { grid-template-columns:1fr; gap:1.5rem; }
-      .qv-media-container { flex-direction:row-reverse; align-items:flex-start; }
-      #qv-image { flex:1; }
+    .qv-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .qv-media-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .qv-gallery-container {
+      display: none;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.25rem;
+    }
+
+    @media(max-width:767px) {
+      .qv-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      .qv-media-container {
+        flex-direction: row-reverse;
+        align-items: flex-start;
+      }
+
+      #qv-image {
+        flex: 1;
+      }
+
       .qv-gallery-container {
-        flex-direction:column !important;
-        overflow-y:auto !important;
-        overflow-x:hidden !important;
-        max-height:280px;
-        width:50px;
-        flex-shrink:0;
-        padding-bottom:0;
-        padding-right:0.25rem;
+        flex-direction: column !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        max-height: 280px;
+        width: 50px;
+        flex-shrink: 0;
+        padding-bottom: 0;
+        padding-right: 0.25rem;
       }
+
       .qv-gallery-container::-webkit-scrollbar {
-        width:3px;
+        width: 3px;
       }
+
       .qv-gallery-container::-webkit-scrollbar-thumb {
-        background:var(--outline-variant);
-        border-radius:99px;
+        background: var(--outline-variant);
+        border-radius: 99px;
       }
-      .qv-thumb { width:45px !important; height:45px !important; }
+
+      .qv-thumb {
+        width: 45px !important;
+        height: 45px !important;
+      }
     }
   </style>
 </head>
+
 <body>
   <div id="nav-placeholder"></div>
   <main>
@@ -70,7 +250,7 @@
       <div class="container">
         <span class="label-sm text-secondary">Catálogo</span>
         <h1>Productos</h1>
-        <p>Muebles de exterior premium para cualquier espacio y clima.</p>
+        <p>Muebles de exterior sustentables para cualquier espacio y clima.</p>
       </div>
     </div>
 
@@ -143,17 +323,22 @@
       <div class="modal-body">
         <div class="qv-grid">
           <div class="qv-media-container">
-            <div style="aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;background:var(--surface-container-low);cursor:zoom-in;display:flex;align-items:center;justify-content:center;" id="qv-image" onclick="openLightbox()"></div>
+            <div
+              style="aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;background:var(--surface-container-low);cursor:zoom-in;display:flex;align-items:center;justify-content:center;"
+              id="qv-image" onclick="openLightbox()"></div>
             <div id="qv-gallery" class="qv-gallery-container"></div>
           </div>
           <div>
             <div id="qv-category" class="card-tag mb-2" style="display: none;"></div>
-            <div id="qv-sku" style="font-family:'Manrope',sans-serif; font-weight:700; font-size:0.8rem; color:var(--primary); margin-bottom:0.5rem; display:none;"></div>
+            <div id="qv-sku"
+              style="font-family:'Manrope',sans-serif; font-weight:700; font-size:0.8rem; color:var(--primary); margin-bottom:0.5rem; display:none;">
+            </div>
             <p id="qv-desc" class="text-muted" style="font-size:0.9rem;margin-bottom:1.5rem;white-space:pre-line;"></p>
             <div id="qv-tags" class="card-tags mb-3" style="display: none;"></div>
             <div style="display:flex; gap:0.5rem;">
               <a id="qv-cotizar" href="/contacto.html" class="btn btn-primary" style="flex:1;">Cotizar este producto</a>
-              <button id="qv-add-cart" class="btn btn-secondary" title="Añadir a la lista de cotización" style="padding:0 1rem; border-color:var(--outline-variant); background:var(--surface-container-low);">
+              <button id="qv-add-cart" class="btn btn-secondary" title="Añadir a la lista de cotización"
+                style="padding:0 1rem; border-color:var(--outline-variant); background:var(--surface-container-low);">
                 <span class="material-symbols-outlined">add_shopping_cart</span>
               </button>
             </div>
@@ -165,13 +350,21 @@
 
   <!-- Lightbox Modal -->
   <div class="lightbox-modal" id="lightbox-modal">
-    <div style="position:absolute;inset:0;z-index:400;" onclick="closeLightbox()"></div>
-    <button class="modal-close" style="position:absolute;top:1.5rem;right:1.5rem;color:#fff;background:none;border:none;cursor:pointer;z-index:410;" onclick="closeLightbox()"><span class="material-symbols-outlined" style="font-size:2rem">close</span></button>
-    <button class="slider-btn" style="position:absolute;left:1.5rem;top:50%;transform:translateY(-50%);z-index:410;display:none;" id="lb-prev" onclick="lightboxPrev(event)"><span class="material-symbols-outlined">chevron_left</span></button>
-    <button class="slider-btn" style="position:absolute;right:1.5rem;top:50%;transform:translateY(-50%);z-index:410;display:none;" id="lb-next" onclick="lightboxNext(event)"><span class="material-symbols-outlined">chevron_right</span></button>
-    <img id="lightbox-img" src="" style="max-width:90%;max-height:90%;object-fit:contain;border-radius:var(--radius-sm);position:relative;z-index:405;">
+    <div style="position:absolute;inset:0;z-index:400;" id="lb-overlay"></div>
+    <button class="modal-close"
+      style="position:absolute;top:1.5rem;right:1.5rem;color:#fff;background:none;border:none;cursor:pointer;z-index:410;"
+      onclick="closeLightbox()"><span class="material-symbols-outlined" style="font-size:2rem">close</span></button>
+    <button class="slider-btn"
+      style="position:absolute;left:1.5rem;top:50%;transform:translateY(-50%);z-index:410;display:none;" id="lb-prev"
+      onclick="lightboxPrev(event)"><span class="material-symbols-outlined">chevron_left</span></button>
+    <button class="slider-btn"
+      style="position:absolute;right:1.5rem;top:50%;transform:translateY(-50%);z-index:410;display:none;" id="lb-next"
+      onclick="lightboxNext(event)"><span class="material-symbols-outlined">chevron_right</span></button>
+    <img id="lightbox-img" src=""
+      style="max-width:90%;max-height:90%;object-fit:contain;border-radius:var(--radius-sm);position:relative;z-index:405;">
   </div>
 
   <script type="module" src="/js/productos.js"></script>
 </body>
+
 </html>

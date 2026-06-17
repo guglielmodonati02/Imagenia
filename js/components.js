@@ -234,6 +234,24 @@ export async function initPage(activeLink = '') {
   const navPlaceholder = document.getElementById('nav-placeholder');
   if (navPlaceholder) navPlaceholder.outerHTML = renderNav(activeLink);
 
+  // Establecer --navbar-height como variable CSS en :root para uso en cualquier página
+  const setNavbarHeight = () => {
+    const nav = document.querySelector('.glass-nav');
+    if (nav) {
+      document.documentElement.style.setProperty('--navbar-height', nav.offsetHeight + 'px');
+    }
+  };
+  // Medir después del paint
+  requestAnimationFrame(() => {
+    setNavbarHeight();
+    // Re-medir en resize (con debounce)
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(setNavbarHeight, 100);
+    }, { passive: true });
+  });
+
   // Inject footer
   const footerPlaceholder = document.getElementById('footer-placeholder');
   if (footerPlaceholder) footerPlaceholder.outerHTML = renderFooter(settings, impactStats || []);
@@ -260,8 +278,8 @@ window.toggleNav = function () {
 
 /* ── Nav search redirect ────────────────────────────────────── */
 window.handleSearch = function (val) {
+  clearTimeout(window._searchTimer);
   if (val.length > 2) {
-    clearTimeout(window._searchTimer);
     window._searchTimer = setTimeout(() => {
       window.location.href = `/productos.html?search=${encodeURIComponent(val)}`;
     }, 600);

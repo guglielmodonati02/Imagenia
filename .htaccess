@@ -1,0 +1,20 @@
+# Imagenia - configuración básica para cPanel/Apache
+DirectoryIndex index.html
+
+# Asegura tipos MIME correctos para módulos JS y SVG
+AddType application/javascript .js
+AddType image/svg+xml .svg
+
+# Evita listado de directorios
+Options -Indexes
+
+# Cache básico para assets estáticos
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType image/png "access plus 30 days"
+  ExpiresByType image/svg+xml "access plus 30 days"
+  ExpiresByType image/jpeg "access plus 30 days"
+  ExpiresByType image/webp "access plus 30 days"
+</IfModule>

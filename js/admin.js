@@ -137,7 +137,7 @@ window.showSection = function(name, el) {
   document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
   document.getElementById('sec-' + name).classList.add('visible');
   el.classList.add('active');
-  const loaders = { products, categories, tags, catalogs, contacts, settings: loadSettings, slides, impact, blogs, comparisons, clients, counter: loadCounter, 'wa-questions': loadWAQuestions, 'wa-leads': loadWALeads };
+  const loaders = { products, categories, tags, catalogs, contacts, settings: loadSettings, slides, impact, blogs, comparisons, clients, counter: loadCounter, 'wa-questions': loadWAQuestions, 'wa-leads': loadWALeads, 'home-carousel': loadHomeCarousel };
   if (loaders[name]) loaders[name]();
 };
 
@@ -1280,13 +1280,35 @@ window.openBlogModal = function(s = null) {
     blogQuill = new Quill('#blog-content-editor', {
       theme: 'snow',
       modules: {
-        toolbar: [
-          [{ 'size': ['small', false, 'large', 'huge'] }],
-          [{ 'header': [2, 3, false] }],
-          ['bold', 'italic', 'underline', 'strike'],
-          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-          ['link', 'video', 'clean']
-        ]
+        toolbar: {
+          container: [
+            [{ 'size': ['small', false, 'large', 'huge'] }],
+            [{ 'header': [2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['link', 'image', 'video', 'clean']
+          ],
+          handlers: {
+            // Handler personalizado: sube la imagen a Supabase Storage en lugar de base64
+            image: function() {
+              const input = document.createElement('input');
+              input.setAttribute('type', 'file');
+              input.setAttribute('accept', 'image/*');
+              input.click();
+              input.onchange = async () => {
+                const file = input.files[0];
+                if (!file) return;
+                showToast('Subiendo imagen...');
+                const { url, error } = await uploadFile('imagenia-assets', 'blogs', file);
+                if (error || !url) { showToast('Error al subir imagen', 'error'); return; }
+                const range = blogQuill.getSelection(true);
+                blogQuill.insertEmbed(range.index, 'image', url);
+                blogQuill.setSelection(range.index + 1);
+                showToast('Imagen insertada en el contenido ✓');
+              };
+            }
+          }
+        }
       }
     });
   }
@@ -1630,6 +1652,100 @@ window.deleteClient = async function(id) {
 };
 
 init();
+
+// ── Home Photo Carousel ────────────────────────────────────────
+let allHCItems = [];
+
+async function loadHomeCarousel() {
+  const settings = await getSettings();
+  try { allHCItems = JSON.parse(settings.home_photo_carousel_json || '[]'); } catch(e) { allHCItems = []; }
+  if (!Array.isArray(allHCItems)) allHCItems = [];
+  allHCItems.sort((a, b) => (a.order || 0) - (b.order || 0));
+  renderHCTable();
+}
+
+function renderHCTable() {
+  const tbody = document.getElementById('home-carousel-table');
+  if (!tbody) return;
+  const tooMany = allHCItems.length >= 7;
+  tbody.innerHTML = allHCItems.map(item => `
+    <tr>
+      <td>${item.image_url ? `<img src="${item.image_url}" class="img-thumb" onerror="this.style.display='none'">` : '—'}</td>
+      <td><strong>${item.title || '—'}</strong></td>
+      <td style="font-size:0.8rem;color:var(--on-surface-variant)">${item.subtitle || '—'}</td>
+      <td style="font-size:0.8rem">${item.link ? `<a href="${item.link}" target="_blank">Enlace</a>` : '—'}</td>
+      <td>${item.order || 0}</td>
+      <td><span class="badge ${item.active !== false ? 'badge-green' : 'badge-grey'}">${item.active !== false ? 'Sí' : 'No'}</span></td>
+      <td><div class="action-btns">
+        <button class="btn-icon-sm btn-edit" onclick="openHCModal('${item.id}')"><span class="material-symbols-outlined" style="font-size:1rem">edit</span></button>
+        <button class="btn-icon-sm btn-del" onclick="deleteHC('${item.id}')"><span class="material-symbols-outlined" style="font-size:1rem">delete</span></button>
+      </div></td>
+    </tr>`)  .join('') || '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--on-surface-variant)">Sin fotos. Agrega la primera (máx. 7).</td></tr>';
+}
+
+window.openHCModal = function(id = null) {
+  const item = id ? allHCItems.find(x => x.id === id) : null;
+  if (allHCItems.length >= 7 && !item) { showToast('Máximo 7 fotos permitidas', 'error'); return; }
+  document.getElementById('hc-modal-title').textContent = item ? 'Editar foto' : 'Nueva foto';
+  document.getElementById('hc-id').value = item?.id || '';
+  document.getElementById('hc-image').value = item?.image_url || '';
+  document.getElementById('hc-title').value = item?.title || '';
+  document.getElementById('hc-subtitle').value = item?.subtitle || '';
+  document.getElementById('hc-link').value = item?.link || '';
+  document.getElementById('hc-order').value = item?.order ?? allHCItems.length;
+  document.getElementById('hc-active').checked = item?.active !== false;
+  document.getElementById('hc-img-preview').innerHTML =
+    item?.image_url ? `<img src="${item.image_url}" style="height:80px;border-radius:var(--radius-sm);object-fit:cover">` : '';
+  document.getElementById('modal-hc').classList.add('open');
+};
+
+window.uploadHCImage = async function(input) {
+  const file = input.files[0]; if (!file) return;
+  const btn = input.closest('.upload-btn');
+  btn.innerHTML = 'Subiendo...';
+  const { url, error } = await uploadFile('imagenia-assets', 'home-carousel', file);
+  btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1rem">upload</span> Subir';
+  if (error || !url) { showToast('Error al subir imagen', 'error'); return; }
+  document.getElementById('hc-image').value = url;
+  document.getElementById('hc-img-preview').innerHTML = `<img src="${url}" style="height:80px;border-radius:var(--radius-sm);object-fit:cover">`;
+  showToast('Imagen subida ✓');
+};
+
+window.saveHC = async function() {
+  const imageUrl = document.getElementById('hc-image').value.trim();
+  if (!imageUrl) { showToast('La imagen es requerida', 'error'); return; }
+  const editId = document.getElementById('hc-id').value;
+  const item = {
+    id:        editId || 'hc-' + Date.now(),
+    image_url: imageUrl,
+    title:     document.getElementById('hc-title').value.trim() || null,
+    subtitle:  document.getElementById('hc-subtitle').value.trim() || null,
+    link:      document.getElementById('hc-link').value.trim() || null,
+    order:     parseInt(document.getElementById('hc-order').value) || 0,
+    active:    document.getElementById('hc-active').checked,
+  };
+  if (editId) {
+    const idx = allHCItems.findIndex(x => x.id === editId);
+    if (idx !== -1) allHCItems[idx] = item;
+  } else {
+    if (allHCItems.length >= 7) { showToast('Máximo 7 fotos permitidas', 'error'); return; }
+    allHCItems.push(item);
+  }
+  allHCItems.sort((a, b) => (a.order || 0) - (b.order || 0));
+  await setSetting('home_photo_carousel_json', JSON.stringify(allHCItems));
+  showToast('Foto guardada ✓');
+  closeModal('modal-hc');
+  renderHCTable();
+};
+
+window.deleteHC = async function(id) {
+  if (!confirm('¿Eliminar esta foto del carousel?')) return;
+  allHCItems = allHCItems.filter(x => x.id !== id);
+  await setSetting('home_photo_carousel_json', JSON.stringify(allHCItems));
+  showToast('Foto eliminada');
+  renderHCTable();
+};
+
 
 /* ── Icon Picker (Material Symbols) ───────────────────────────── */
 const ALL_ICONS = [

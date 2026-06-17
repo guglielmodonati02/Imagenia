@@ -13,6 +13,43 @@ let siteSettings = {};
 let currentLightboxGallery = [];
 let currentLightboxIndex = 0;
 
+// Fix 13: Map global de productos para evitar serializar el objeto en onclick
+window._productMap = new Map();
+
+// Fix 12: Función global para manejar errores de imagen en Quick View
+window.handleQvImgError = function(img) {
+  if (img && img.parentElement) {
+    img.parentElement.innerHTML = '<div class="card-placeholder"><span class="material-symbols-outlined">image_not_supported</span></div>';
+  }
+};
+
+// Fix 3: Sincronizar estado con la URL (deep-linking)
+function syncUrl() {
+  const params = new URLSearchParams();
+  if (currentCategory !== 'todos') params.set('cat', currentCategory);
+  if (searchQuery) params.set('search', searchQuery);
+  if (selectedTagIds.size > 0) params.set('tags', [...selectedTagIds].join(','));
+  if (currentPage > 1) params.set('page', String(currentPage));
+  const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+  history.pushState(
+    { cat: currentCategory, tags: [...selectedTagIds], page: currentPage, search: searchQuery },
+    '',
+    newUrl
+  );
+}
+
+// Fix 3: Restaurar estado al presionar Atrás en el navegador
+window.addEventListener('popstate', (e) => {
+  if (e.state) {
+    currentCategory = e.state.cat || 'todos';
+    selectedTagIds = new Set(e.state.tags || []);
+    currentPage = e.state.page || 1;
+    searchQuery = e.state.search || '';
+    renderFilters();
+    loadProducts();
+  }
+});
+
 async function init() {
   siteSettings = await initPage('Productos');
 
@@ -28,6 +65,11 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   if (params.get('cat')) currentCategory = params.get('cat');
   if (params.get('search')) searchQuery = params.get('search');
+  // Fix 3: restaurar tags y página desde URL
+  if (params.get('tags')) {
+    params.get('tags').split(',').filter(Boolean).forEach(id => selectedTagIds.add(id));
+  }
+  if (params.get('page')) currentPage = parseInt(params.get('page')) || 1;
 
   // Load categories for tabs
   const { data: cats } = await getCategories();
@@ -39,6 +81,18 @@ async function init() {
 
   // Load products
   await loadProducts();
+
+  // Fix 7: Si hay ?id= en la URL, abrir el Quick View del producto correspondiente
+  const pidFromUrl = params.get('id');
+  if (pidFromUrl) {
+    const p = window._productMap.get(String(pidFromUrl));
+    if (p) {
+      openQuickView(p);
+    } else {
+      // El producto puede estar en otra página; redirigir a la página de detalle directamente
+      window.location.replace(`/producto.html?id=${pidFromUrl}`);
+    }
+  }
 }
 
 function renderCategoryTabs(cats) {
@@ -122,26 +176,64 @@ async function loadProducts() {
   const grid = document.getElementById('products-grid');
   grid.innerHTML = Array(6).fill('<div class="card skeleton" style="height:300px"></div>').join('');
 
-  let query = supabase
-    .from('products_with_tags')
-    .select('*', { count: 'exact' })
-    .eq('is_active', true);
-
-  if (currentCategory !== 'todos') query = query.eq('category_slug', currentCategory);
-  if (searchQuery) query = query.ilike('name', `%${searchQuery}%`);
-
-  // Sort
   const sort = document.getElementById('sort-select')?.value || 'sort_order';
-  if (sort === 'name_asc') query = query.order('name', { ascending: true });
-  else if (sort === 'name_desc') query = query.order('name', { ascending: false });
-  else if (sort === 'newest') query = query.order('created_at', { ascending: false });
-  else if (sort === 'featured') { query = query.eq('is_featured', true).order('sort_order'); }
-  else query = query.order('sort_order').order('created_at', { ascending: false });
+  const tagIdsArr = selectedTagIds.size > 0 ? [...selectedTagIds] : null;
 
-  const from = (currentPage - 1) * PAGE_SIZE;
-  query = query.range(from, from + PAGE_SIZE - 1);
+  let data, count, error;
 
-  let { data, count, error } = await query;
+  if (tagIdsArr) {
+    // Fix 1 (híbrido client-side): cuando hay tags activos, traer todos los productos
+    // sin paginación, filtrar en cliente y paginar manualmente → conteo y paginación correctos.
+    let query = supabase
+      .from('products_with_tags')
+      .select('*')
+      .eq('is_active', true);
+
+    if (currentCategory !== 'todos') query = query.eq('category_slug', currentCategory);
+    if (searchQuery) query = query.ilike('name', `%${searchQuery}%`);
+    if (sort === 'featured') query = query.eq('is_featured', true);
+
+    if (sort === 'name_asc') query = query.order('name', { ascending: true });
+    else if (sort === 'name_desc') query = query.order('name', { ascending: false });
+    else if (sort === 'newest') query = query.order('created_at', { ascending: false });
+    else query = query.order('sort_order').order('created_at', { ascending: false });
+
+    ({ data, error } = await query);
+
+    if (!error) {
+      // Filtrar por tags en el cliente (AND lógico: producto debe tener TODOS los tags)
+      data = (data || []).filter(p => {
+        const pTagIds = (Array.isArray(p.tags) ? p.tags : []).map(t => t.tag_id);
+        return tagIdsArr.every(id => pTagIds.includes(id));
+      });
+      count = data.length;
+      // Paginar en cliente
+      const from = (currentPage - 1) * PAGE_SIZE;
+      data = data.slice(from, from + PAGE_SIZE);
+    }
+  } else {
+    // Sin tags: query directa con paginación servidor-side estándar
+    let query = supabase
+      .from('products_with_tags')
+      .select('*', { count: 'exact' })
+      .eq('is_active', true);
+
+    if (currentCategory !== 'todos') query = query.eq('category_slug', currentCategory);
+    if (searchQuery) query = query.ilike('name', `%${searchQuery}%`);
+
+    if (sort === 'name_asc') query = query.order('name', { ascending: true });
+    else if (sort === 'name_desc') query = query.order('name', { ascending: false });
+    else if (sort === 'newest') query = query.order('created_at', { ascending: false });
+    else if (sort === 'featured') { query = query.eq('is_featured', true).order('sort_order'); }
+    else query = query.order('sort_order').order('created_at', { ascending: false });
+
+    const from = (currentPage - 1) * PAGE_SIZE;
+    query = query.range(from, from + PAGE_SIZE - 1);
+
+    ({ data, count, error } = await query);
+  }
+
+
   if (error) { grid.innerHTML = '<div class="no-products"><p>Error al cargar productos.</p></div>'; return; }
 
   // Fallback automático: Si la vista SQL no expone el SKU, lo leemos directamente de la tabla base en un solo batch query
@@ -154,17 +246,11 @@ async function loadProducts() {
     } catch (err) { console.error('Error inyectando SKUs base:', err); }
   }
 
-  // Client-side tag filter
-  if (selectedTagIds.size > 0) {
-    data = (data || []).filter(p => {
-      const tags = Array.isArray(p.tags) ? p.tags : [];
-      const pTagIds = tags.map(t => t.tag_id);
-      return [...selectedTagIds].every(id => pTagIds.includes(id));
-    });
-  }
+  // Fix 13: poblar el mapa global de productos
+  (data || []).forEach(p => window._productMap.set(String(p.id), p));
 
   totalCount = count || 0;
-  document.getElementById('products-count').textContent = `${data?.length || 0} producto${(data?.length || 0) !== 1 ? 's' : ''}`;
+  document.getElementById('products-count').textContent = `${totalCount} producto${totalCount !== 1 ? 's' : ''}`;
 
   if (!data || data.length === 0) {
     grid.innerHTML = `<div class="no-products">
@@ -179,12 +265,16 @@ async function loadProducts() {
 
   grid.innerHTML = data.map(p => renderCard(p)).join('');
   renderPagination(Math.ceil(totalCount / PAGE_SIZE));
+  // Fix 3: sincronizar URL tras cada carga
+  syncUrl();
 }
 
 function renderCard(p) {
+  // Fix 13: usar ID en onclick en lugar de serializar el objeto completo
+  const pid = String(p.id);
   return `
-  <div class="card" onclick="openQuickView(${JSON.stringify(p).replace(/"/g,'&quot;')})" style="cursor:pointer">
-    <div class="card-image">
+  <div class="card" style="cursor:pointer">
+    <div class="card-image" onclick="openQuickView(window._productMap.get('${pid}'))">
       ${imgWithFallback(p.image_url, p.name)}
       <div style="position:absolute;top:0.75rem;right:0.75rem;display:flex;gap:0.4rem">
         ${p.is_new ? '<span style="background:var(--secondary);color:#fff;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;padding:0.2rem 0.5rem;border-radius:99px;text-transform:uppercase">Nuevo</span>' : ''}
@@ -194,7 +284,10 @@ function renderCard(p) {
     <div class="card-body">
       <div class="card-title">${p.name}</div>
       <div style="display:flex; gap:0.5rem; margin-top:1rem;">
-        <button class="btn btn-primary btn-sm" style="flex:1;" onclick="event.stopPropagation();cotizar('${encodeURIComponent(p.name)}', '${encodeURIComponent(p.sku || '')}')">Cotizar</button>
+        <button class="btn btn-primary btn-sm" style="flex:1;" onclick="event.stopPropagation();cotizar('${encodeURIComponent(p.name)}', '${encodeURIComponent(p.sku || '')}')" id="cotizar-${pid}">Cotizar</button>
+        <a href="/producto.html?id=${pid}" class="btn btn-secondary btn-sm" style="padding:0 0.75rem; border-color:var(--outline-variant); background:var(--surface-container-low);" title="Ver detalle" onclick="event.stopPropagation()">
+          <span class="material-symbols-outlined" style="font-size:1.2rem;">open_in_new</span>
+        </a>
         <button class="btn btn-secondary btn-sm" style="padding:0 0.75rem; border-color:var(--outline-variant); background:var(--surface-container-low);" title="Añadir a la lista de cotización" onclick="event.stopPropagation();Cart.add('${(p.name || '').replace(/'/g, "\\'")}', '${p.sku || ''}')">
           <span class="material-symbols-outlined" style="font-size:1.2rem;">add_shopping_cart</span>
         </button>
@@ -207,12 +300,16 @@ function renderPagination(totalPages) {
   const el = document.getElementById('pagination');
   if (totalPages <= 1) { el.innerHTML = ''; return; }
   let html = '';
+  let lastWasEllipsis = false;
   if (currentPage > 1) html += `<button class="page-btn" onclick="goToPage(${currentPage-1})"><span class="material-symbols-outlined" style="font-size:1rem">chevron_left</span></button>`;
   for (let i = 1; i <= totalPages; i++) {
     if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 2) {
       html += `<button class="page-btn${i===currentPage?' active':''}" onclick="goToPage(${i})">${i}</button>`;
-    } else if (Math.abs(i - currentPage) === 3) {
+      lastWasEllipsis = false;
+    } else if (!lastWasEllipsis) {
+      // Fix 11: evitar … duplicados con flag
       html += `<span class="page-btn" style="cursor:default">…</span>`;
+      lastWasEllipsis = true;
     }
   }
   if (currentPage < totalPages) html += `<button class="page-btn" onclick="goToPage(${currentPage+1})"><span class="material-symbols-outlined" style="font-size:1rem">chevron_right</span></button>`;
@@ -258,6 +355,7 @@ window.removeTag = function(id) {
   const cb = document.querySelector(`input[value="${id}"]`);
   if (cb) cb.checked = false;
   updateActiveFilters();
+  currentPage = 1; // Fix 2: resetear página al quitar un tag
   loadProducts();
 };
 window.clearFilters = function() {
@@ -269,7 +367,16 @@ window.clearFilters = function() {
 };
 window.goToPage = function(page) {
   currentPage = page;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Fix 8: scroll dinámico que respeta la altura real de la navbar
+  const navEl = document.querySelector('nav.glass-nav') || document.querySelector('header');
+  const navbarHeight = navEl ? navEl.getBoundingClientRect().height : 80;
+  const target = document.querySelector('.products-layout') || document.getElementById('products-grid');
+  if (target) {
+    const top = target.getBoundingClientRect().top + window.scrollY - navbarHeight - 16;
+    window.scrollTo({ top, behavior: 'smooth' });
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
   loadProducts();
 };
 window.toggleFilterGroup = function(el) {
@@ -288,16 +395,27 @@ window.closeMobileFilters = function() {
 };
 window.loadProducts = loadProducts;
 window.openQuickView = function(p) {
+  if (!p) return; // Fix 13: guardia si el mapa aún no tiene el producto
   const tags = Array.isArray(p.tags) ? p.tags : [];
   document.getElementById('qv-name').textContent = p.name;
-  document.getElementById('qv-category').textContent = p.category_name || '';
+  // Fix 4: mostrar/ocultar qv-category correctamente
+  const qvCat = document.getElementById('qv-category');
+  if (qvCat) {
+    qvCat.textContent = p.category_name || '';
+    qvCat.style.display = p.category_name ? 'block' : 'none';
+  }
   const qvSku = document.getElementById('qv-sku');
   if (qvSku) {
     qvSku.textContent = p.sku ? `SKU: ${p.sku}` : '';
     qvSku.style.display = p.sku ? 'block' : 'none';
   }
   document.getElementById('qv-desc').textContent = p.description || 'Producto de exterior premium IMAGENIA.';
-  document.getElementById('qv-tags').innerHTML = tags.map(t => `<span class="tag-pill">${t.tag_name}</span>`).join('');
+  // Fix 5: mostrar/ocultar qv-tags correctamente
+  const qvTagsEl = document.getElementById('qv-tags');
+  if (qvTagsEl) {
+    qvTagsEl.innerHTML = tags.map(t => `<span class="tag-pill">${t.tag_name}</span>`).join('');
+    qvTagsEl.style.display = tags.length > 0 ? 'flex' : 'none';
+  }
   
   // Gallery construction (limit to 10)
   const galleryImages = [];
@@ -319,7 +437,8 @@ window.openQuickView = function(p) {
   const qvImageEl = document.getElementById('qv-image');
   if (qvImageEl) {
     if (mainImgUrl) {
-      qvImageEl.innerHTML = `<img id="qv-main-img" src="${mainImgUrl}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<div class=\\'card-placeholder\\'><span class=\\'material-symbols-outlined\\'>image_not_supported</span></div>'">`;
+      // Fix 12: usar función global en lugar de onerror inline con escapes frágiles
+      qvImageEl.innerHTML = `<img id="qv-main-img" src="${mainImgUrl}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;" onerror="handleQvImgError(this)">`;
       qvImageEl.style.cursor = 'zoom-in';
     } else {
       qvImageEl.innerHTML = `<div class="card-placeholder"><span class="material-symbols-outlined">chair</span></div>`;
@@ -491,6 +610,28 @@ if (lightboxEl) {
       lastWheelTime = now;
     }
   }, { passive: false });
+
+  // Fix 9: Cierre inteligente del overlay — distingue tap de swipe
+  const lbOverlay = document.getElementById('lb-overlay');
+  if (lbOverlay) {
+    let overlayPointerDownTime = 0;
+    let overlayPointerDownX = 0;
+    let overlayPointerDownY = 0;
+    lbOverlay.addEventListener('pointerdown', (e) => {
+      overlayPointerDownTime = Date.now();
+      overlayPointerDownX = e.clientX;
+      overlayPointerDownY = e.clientY;
+    });
+    lbOverlay.addEventListener('pointerup', (e) => {
+      const elapsed = Date.now() - overlayPointerDownTime;
+      const dx = Math.abs(e.clientX - overlayPointerDownX);
+      const dy = Math.abs(e.clientY - overlayPointerDownY);
+      // Solo cierra si fue tap corto (< 200ms) y sin movimiento significativo
+      if (elapsed < 200 && dx < 10 && dy < 10) {
+        closeLightbox();
+      }
+    });
+  }
 }
 
 document.getElementById('qv-modal')?.addEventListener('click', e => { if (e.target.id === 'qv-modal') closeModal(); });

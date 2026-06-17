@@ -1,12 +1,17 @@
 // js/home.js — IMAGENIA Homepage v2 (fully data-driven)
 import { initPage, showToast, imgWithFallback } from './components.js';
-import { getSettings, getCategories, getProducts, supabase } from './supabase.js';
+import { getSettings, getCategories, supabase } from './supabase.js';
 import { renderCounter, initCounter } from './counter.js';
 
-/* ── Slider state ─────────────────────────────────────────────── */
+/* ── Hero Slider state ────────────────────────────────────────── */
 let slides = [];
 let currentSlide = 0;
 let sliderTimer = null;
+
+/* ── Photo Carousel state ─────────────────────────────────────── */
+let photoSlides = [];
+let photoCurrentIndex = 0;
+let photoTimer = null;
 
 /* ── Bootstrap ────────────────────────────────────────────────── */
 async function init() {
@@ -16,19 +21,16 @@ async function init() {
     loadSlider(),
     loadAbout(settings),
     loadCategories(settings),
-    loadProducts('bestseller'),
+    loadPhotoCarousel(settings),
     loadPromoBanner(settings),
     loadQuoteForm(settings),
   ]);
 
-  // Counter (after settings loaded)
   renderCounter('counter-section', settings);
   initCounter();
 
   const contactForm = document.getElementById('contact-form');
-  if (contactForm) {
-    contactForm.addEventListener('submit', handleContact);
-  }
+  if (contactForm) contactForm.addEventListener('submit', handleContact);
 }
 
 /* ── Hero Slider ──────────────────────────────────────────────── */
@@ -44,7 +46,6 @@ async function loadSlider() {
   const dotsContainer = document.getElementById('slider-dots');
 
   if (!slides.length) {
-    // Fallback: show default green hero
     container.innerHTML = `
       <div class="slide active">
         <div class="slide-bg" style="background:var(--primary)"></div>
@@ -66,7 +67,6 @@ async function loadSlider() {
     return;
   }
 
-  // Render slides
   container.innerHTML = slides.map((s, i) => `
     <div class="slide${i === 0 ? ' active' : ''}" data-index="${i}">
       <div class="slide-bg" style="background-image:url('${s.image_url}')"></div>
@@ -84,7 +84,6 @@ async function loadSlider() {
       </div>
     </div>`).join('');
 
-  // Render dots
   dotsContainer.innerHTML = slides.map((_, i) =>
     `<button class="slider-dot${i === 0 ? ' active' : ''}" onclick="sliderGoTo(${i})" aria-label="Slide ${i+1}"></button>`
   ).join('');
@@ -93,7 +92,6 @@ async function loadSlider() {
     document.getElementById('slider-prev').style.display = 'none';
     document.getElementById('slider-next').style.display = 'none';
   }
-
   startAutoplay();
 }
 
@@ -107,40 +105,28 @@ function sliderGoTo(index) {
   allDots[currentSlide]?.classList.add('active');
   resetAutoplay();
 }
+function startAutoplay() { sliderTimer = setInterval(() => sliderGoTo(currentSlide + 1), 5000); }
+function resetAutoplay() { clearInterval(sliderTimer); startAutoplay(); }
 
-function startAutoplay() {
-  sliderTimer = setInterval(() => sliderGoTo(currentSlide + 1), 5000);
-}
-
-function resetAutoplay() {
-  clearInterval(sliderTimer);
-  startAutoplay();
-}
-
-window.sliderPrev = () => sliderGoTo(currentSlide - 1);
-window.sliderNext = () => sliderGoTo(currentSlide + 1);
-window.sliderGoTo = sliderGoTo;
+window.sliderPrev  = () => sliderGoTo(currentSlide - 1);
+window.sliderNext  = () => sliderGoTo(currentSlide + 1);
+window.sliderGoTo  = sliderGoTo;
 
 /* ── About section ────────────────────────────────────────────── */
 function loadAbout(settings) {
   const title = document.getElementById('about-title');
-  const text = document.getElementById('about-text');
-  const wrap = document.getElementById('about-image-wrap');
-  
-  const aboutTitle = settings.home_about_title || settings.about_title;
-  const aboutText = settings.home_about_text || settings.about_text;
-  
-  if (title && aboutTitle) title.textContent = aboutTitle;
-  if (text && aboutText) text.textContent = aboutText;
-  
+  const text  = document.getElementById('about-text');
+  const wrap  = document.getElementById('about-image-wrap');
+  if (title && (settings.home_about_title || settings.about_title))
+    title.textContent = settings.home_about_title || settings.about_title;
+  if (text && (settings.home_about_text || settings.about_text))
+    text.textContent = settings.home_about_text || settings.about_text;
   if (wrap && settings.home_about_image_url) {
     const url = settings.home_about_image_url;
     const isVideo = url.toLowerCase().match(/\.(mp4|webm)$/);
-    if (isVideo) {
-      wrap.innerHTML = `<video src="${url}" style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover;" autoplay muted loop playsinline></video>`;
-    } else {
-      wrap.innerHTML = `<img src="${url}" alt="Acerca de IMAGENIA" loading="lazy" style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover;">`;
-    }
+    wrap.innerHTML = isVideo
+      ? `<video src="${url}" style="width:100%;height:100%;border-radius:12px;object-fit:cover;" autoplay muted loop playsinline></video>`
+      : `<img src="${url}" alt="Acerca de IMAGENIA" loading="lazy" style="width:100%;height:100%;border-radius:12px;object-fit:cover;">`;
   }
 }
 
@@ -154,38 +140,21 @@ async function loadCategories(settings) {
   }
   const { data: allCats } = await getCategories();
   const grid = document.getElementById('category-grid');
-  if (!allCats || !allCats.length) {
-    grid.innerHTML = `<p class="text-muted" style="grid-column:1/-1;text-align:center;padding:2rem">Sin categorías aún. Agrégalas desde el panel de control.</p>`;
+  if (!allCats?.length) {
+    grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--on-surface-variant)">Sin categorías aún.</p>`;
     return;
   }
 
-  // Parse home categories config
   let featuredIds = [];
-  if (settings && settings.home_featured_categories) {
-    try {
-      featuredIds = JSON.parse(settings.home_featured_categories);
-    } catch (e) {
-      console.error("Error parsing home_featured_categories:", e);
-    }
-  }
+  try { featuredIds = JSON.parse(settings?.home_featured_categories || '[]'); } catch (e) {}
 
-  // Get active and featured categories
-  let featuredCats = [];
-  if (featuredIds && featuredIds.length) {
-    featuredCats = featuredIds
-      .map(id => allCats.find(c => c.id === id))
-      .filter(Boolean); // remove inactive/deleted categories
-  }
+  let featuredCats = featuredIds.length
+    ? featuredIds.map(id => allCats.find(c => c.id === id)).filter(Boolean)
+    : [];
+  if (featuredCats.length < 4) featuredCats = allCats.slice(0, 4);
+  else featuredCats = featuredCats.slice(0, 4);
 
-  // Fallback: if no config or not enough categories, take first 4 active ones
-  if (featuredCats.length < 4) {
-    featuredCats = allCats.slice(0, 4);
-  } else {
-    featuredCats = featuredCats.slice(0, 4); // ensure exactly 4
-  }
-
-  // Render the 4 category cards
-  let html = featuredCats.map(c => `
+  const html = featuredCats.map(c => `
     <div class="cat-img-card" onclick="window.location.href='/productos.html?cat=${c.slug}'" role="link" tabindex="0">
       ${c.image_url
         ? `<img src="${c.image_url}" alt="${c.name}" loading="lazy">`
@@ -196,130 +165,135 @@ async function loadCategories(settings) {
       </div>
     </div>`).join('');
 
-  // Build the mosaic images for the "Todos" card
-  const mosaicCells = featuredCats.map(c => {
-    if (c.image_url) {
-      return `<div class="cat-mosaic-cell"><img src="${c.image_url}" alt="${c.name}" loading="lazy"></div>`;
-    } else {
-      return `<div class="cat-mosaic-cell"><div style="width:100%;height:100%;background:var(--primary-container);display:flex;align-items:center;justify-content:center;"><span class="material-symbols-outlined" style="color:var(--primary);font-size:1.5rem;">${c.icon_name || 'category'}</span></div></div>`;
-    }
-  });
+  const mosaicCells = featuredCats.map(c =>
+    c.image_url
+      ? `<div class="cat-mosaic-cell"><img src="${c.image_url}" alt="${c.name}" loading="lazy"></div>`
+      : `<div class="cat-mosaic-cell"><div style="width:100%;height:100%;background:var(--primary-container);display:flex;align-items:center;justify-content:center;"><span class="material-symbols-outlined" style="color:var(--primary);font-size:1.5rem;">${c.icon_name || 'category'}</span></div></div>`
+  );
+  while (mosaicCells.length < 4) mosaicCells.push(`<div class="cat-mosaic-cell"><div style="width:100%;height:100%;background:var(--surface-container-high);"></div></div>`);
 
-  // Pad the mosaic with empty placeholders if less than 4 categories
-  while (mosaicCells.length < 4) {
-    mosaicCells.push(`<div class="cat-mosaic-cell"><div style="width:100%;height:100%;background:var(--surface-container-high);"></div></div>`);
-  }
-
-  // Add the "Todos" card html
-  const todosCardHtml = `
+  grid.innerHTML = html + `
     <div class="cat-img-card" onclick="window.location.href='/productos.html'" role="link" tabindex="0">
-      <div class="cat-mosaic-grid">
-        ${mosaicCells.join('')}
-      </div>
+      <div class="cat-mosaic-grid">${mosaicCells.join('')}</div>
       <div class="cat-img-card-overlay">
         <div class="cat-img-card-name">Todos</div>
         <div class="cat-img-card-link">Ver todo el catálogo →</div>
       </div>
-    </div>
-  `;
-
-  grid.innerHTML = html + todosCardHtml;
+    </div>`;
 }
 
+/* ── Photo Carousel ───────────────────────────────────────────── */
+function loadPhotoCarousel(settings) {
+  const section = document.getElementById('home-photo-carousel-section');
+  if (!section) return;
+
+  let items = [];
+  try { items = JSON.parse(settings.home_photo_carousel_json || '[]'); } catch (e) {}
+  items = items
+    .filter(i => i.active !== false)
+    .sort((a, b) => (a.order || 0) - (b.order || 0))
+    .slice(0, 7); // máximo 7
+
+  if (!items.length) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  photoSlides = items;
+
+  const track = document.getElementById('photo-carousel-track');
+  const dots  = document.getElementById('photo-carousel-dots');
+
+  track.innerHTML = items.map((item, i) => `
+    <div class="photo-carousel-slide${i === 0 ? ' active' : ''}"
+         ${item.link ? `onclick="window.location.href='${item.link}'" style="cursor:pointer"` : ''}>
+      <img src="${item.image_url}" alt="${item.title || 'IMAGENIA'}" loading="${i === 0 ? 'eager' : 'lazy'}">
+      ${(item.title || item.subtitle) ? `
+        <div class="photo-carousel-caption">
+          ${item.title ? `<h3>${item.title}</h3>` : ''}
+          ${item.subtitle ? `<p>${item.subtitle}</p>` : ''}
+          ${item.link ? `<span class="photo-carousel-cta">Ver más →</span>` : ''}
+        </div>` : ''}
+    </div>`).join('');
+
+  dots.innerHTML = items.map((_, i) =>
+    `<button class="photo-carousel-dot${i === 0 ? ' active' : ''}" onclick="photoCarouselGoTo(${i})" aria-label="Foto ${i+1}"></button>`
+  ).join('');
+
+  if (items.length <= 1) {
+    document.querySelector('.photo-carousel-prev')?.style && (document.querySelector('.photo-carousel-prev').style.display = 'none');
+    document.querySelector('.photo-carousel-next')?.style && (document.querySelector('.photo-carousel-next').style.display = 'none');
+  }
+
+  // Touch / swipe
+  const carousel = document.getElementById('photo-carousel');
+  let startX = 0;
+  carousel.addEventListener('touchstart', e => { startX = e.changedTouches[0].screenX; }, { passive: true });
+  carousel.addEventListener('touchend', e => {
+    const diff = e.changedTouches[0].screenX - startX;
+    if (Math.abs(diff) > 50) diff < 0 ? photoCarouselGoTo(photoCurrentIndex + 1) : photoCarouselGoTo(photoCurrentIndex - 1);
+  }, { passive: true });
+
+  if (items.length > 1) photoTimer = setInterval(() => photoCarouselGoTo(photoCurrentIndex + 1), 4500);
+}
+
+function photoCarouselGoTo(index) {
+  const allSlides = document.querySelectorAll('.photo-carousel-slide');
+  const allDots   = document.querySelectorAll('.photo-carousel-dot');
+  allSlides[photoCurrentIndex]?.classList.remove('active');
+  allDots[photoCurrentIndex]?.classList.remove('active');
+  photoCurrentIndex = ((index % photoSlides.length) + photoSlides.length) % photoSlides.length;
+  allSlides[photoCurrentIndex]?.classList.add('active');
+  allDots[photoCurrentIndex]?.classList.add('active');
+  clearInterval(photoTimer);
+  if (photoSlides.length > 1) photoTimer = setInterval(() => photoCarouselGoTo(photoCurrentIndex + 1), 4500);
+}
+
+window.photoCarouselPrev = () => photoCarouselGoTo(photoCurrentIndex - 1);
+window.photoCarouselNext = () => photoCarouselGoTo(photoCurrentIndex + 1);
+window.photoCarouselGoTo = photoCarouselGoTo;
 
 /* ── Promo Banner ─────────────────────────────────────────────── */
 function loadPromoBanner(settings) {
-  const el = document.getElementById('promo-banner-text');
+  const el  = document.getElementById('promo-banner-text');
   const cta = document.getElementById('promo-banner-cta');
-  const bg = document.getElementById('promo-banner-bg');
+  const bg  = document.getElementById('promo-banner-bg');
   if (el && settings.promo_banner_text) el.textContent = settings.promo_banner_text;
   if (cta) {
     if (settings.promo_banner_cta_text) cta.textContent = settings.promo_banner_cta_text;
-    if (settings.promo_banner_cta_url) cta.href = settings.promo_banner_cta_url;
+    if (settings.promo_banner_cta_url)  cta.href = settings.promo_banner_cta_url;
   }
-  if (bg && settings.promo_banner_image_url) {
-    bg.style.backgroundImage = `url('${settings.promo_banner_image_url}')`;
-  }
+  if (bg && settings.promo_banner_image_url) bg.style.backgroundImage = `url('${settings.promo_banner_image_url}')`;
 }
 
 /* ── Quote form image ─────────────────────────────────────────── */
 function loadQuoteForm(settings) {
   const wrap = document.getElementById('quote-image-wrap');
-  if (wrap && settings.contact_form_image_url) {
+  if (wrap && settings.contact_form_image_url)
     wrap.innerHTML = `<img src="${settings.contact_form_image_url}" alt="Proyecto IMAGENIA" loading="lazy">`;
-  }
 }
 
-/* ── Products ─────────────────────────────────────────────────── */
-async function loadProducts(tab) {
-  const grid = document.getElementById('products-grid-home');
-  grid.innerHTML = Array(8).fill('<div class="card skeleton" style="height:280px"></div>').join('');
-
-  const opts = { pageSize: 8 };
-  if (tab === 'bestseller') opts.bestseller = true;
-  else if (tab === 'new') opts.isNew = true;
-  else if (tab === 'featured') opts.featured = true;
-
-  const { data } = await getProducts(opts);
-  if (!data || !data.length) {
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--on-surface-variant)">
-      <span class="material-symbols-outlined" style="font-size:3rem;display:block;margin-bottom:1rem">inventory_2</span>
-      Aún no hay productos en esta categoría.
-    </div>`;
-    return;
-  }
-  grid.innerHTML = data.map(p => renderProductCard(p)).join('');
-}
-
-function renderProductCard(p) {
-  return `
-  <div class="card">
-    <div class="card-image">${imgWithFallback(p.image_url, p.name)}</div>
-    <div class="card-body">
-      <div class="card-title">${p.name}</div>
-      <button class="btn btn-primary btn-sm btn-full mt-3"
-        onclick="event.stopPropagation();window.location.href='/contacto.html?producto=${encodeURIComponent(p.name)}'">
-        Cotizar
-      </button>
-    </div>
-  </div>`;
-}
-
-/* ── Contact form submission ────────────────────────────────────── */
+/* ── Contact form ─────────────────────────────────────────────── */
 async function handleContact(e) {
   e.preventDefault();
   const btn = document.getElementById('contact-btn');
   btn.textContent = 'Enviando...';
   btn.disabled = true;
-  
+
   const producto = document.getElementById('f-producto')?.value || '';
   const comentariosRaw = document.getElementById('f-comentarios')?.value || '';
   const comentariosFull = producto ? `Producto de interés: ${producto}\n\n${comentariosRaw}` : comentariosRaw;
 
   const { error } = await supabase.from('contact_submissions').insert({
-    nombre: document.getElementById('f-nombre').value,
-    empresa: document.getElementById('f-empresa')?.value || null,
-    email: document.getElementById('f-email').value,
-    telefono: document.getElementById('f-tel')?.value || null,
+    nombre:     document.getElementById('f-nombre').value,
+    empresa:    document.getElementById('f-empresa')?.value || null,
+    email:      document.getElementById('f-email').value,
+    telefono:   document.getElementById('f-tel')?.value || null,
     comentarios: comentariosFull || null,
   });
-  
+
   btn.textContent = 'Solicitar Asesoría';
   btn.disabled = false;
-  if (error) { 
-    console.error("Supabase Error:", error);
-    showToast('Error: ' + error.message, 'error'); 
-    return; 
-  }
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
   showToast('¡Solicitud enviada! Te contactaremos pronto.');
   e.target.reset();
 }
-
-/* ── Tab switching ────────────────────────────────────────────── */
-window.switchTab = async function(tab, el) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  await loadProducts(tab);
-};
 
 init();

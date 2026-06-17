@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- SEO: título y descripción se actualizan dinámicamente desde JS -->
+  <title>Producto — IMAGENIA</title>
+  <meta name="description" id="meta-desc" content="Explora los muebles de exterior premium IMAGENIA.">
+  
+  <!-- Open Graph para compartir en redes sociales -->
+  <meta property="og:type" content="product">
+  <meta property="og:title" id="og-title" content="Producto — IMAGENIA">
+  <meta property="og:description" id="og-desc" content="Muebles de exterior premium IMAGENIA.">
+  <meta property="og:image" id="og-image" content="https://www.imagenia.com.mx/assets/logo_con_letras_blancas.png">
+  <meta property="og:url" id="og-url" content="https://www.imagenia.com.mx/producto.html">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" id="tw-title" content="Producto — IMAGENIA">
+  <meta name="twitter:description" id="tw-desc" content="Muebles de exterior premium IMAGENIA.">
+  <meta name="twitter:image" id="tw-image" content="https://www.imagenia.com.mx/assets/logo_con_letras_blancas.png">
+
+  <link rel="icon" type="image/x-icon" href="/assets/LOGO SIN FONDO.ico">
+  <link rel="stylesheet" href="/css/styles.css?v=1.1">
+  <style>
+    /* ── Producto detail layout ─────────────────────────── */
+    .product-detail-section {
+      padding: 2rem 0 5rem;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--on-surface-variant);
+      margin-bottom: 2rem;
+    }
+
+    .breadcrumb a {
+      color: var(--on-surface-variant);
+      transition: color var(--transition);
+    }
+
+    .breadcrumb a:hover {
+      color: var(--primary);
+    }
+
+    .breadcrumb .material-symbols-outlined {
+      font-size: 0.9rem;
+    }
+
+    .product-detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 768px) {
+      .product-detail-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+    }
+
+    /* ── Media column ───────────────────────────────────── */
+    .pd-media {
+      position: sticky;
+      top: 7rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .pd-media {
+        position: static;
+      }
+    }
+
+    .pd-main-image {
+      aspect-ratio: 1;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--surface-container-low);
+      cursor: zoom-in;
+      position: relative;
+    }
+
+    .pd-main-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .pd-main-image:hover img {
+      transform: scale(1.03);
+    }
+
+    .pd-gallery {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.25rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--outline-variant) transparent;
+    }
+
+    .pd-thumb {
+      width: 64px;
+      height: 64px;
+      flex-shrink: 0;
+      border-radius: var(--radius-sm);
+      border: 2px solid var(--outline-variant);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color var(--transition), transform var(--transition);
+    }
+
+    .pd-thumb:hover {
+      transform: scale(1.06);
+    }
+
+    .pd-thumb.active {
+      border-color: var(--primary);
+    }
+
+    .pd-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ── Info column ────────────────────────────────────── */
+    .pd-info {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .pd-category-badge {
+      display: inline-flex;
+    }
+
+    .pd-sku {
+      font-family: 'Manrope', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: var(--primary);
+      letter-spacing: 0.05em;
+    }
+
+    .pd-title {
+      font-family: 'Manrope', sans-serif;
+      font-weight: 800;
+      font-size: clamp(1.5rem, 3vw, 2.25rem);
+      color: var(--on-surface);
+      line-height: 1.15;
+    }
+
+    .pd-description {
+      font-size: 0.95rem;
+      line-height: 1.75;
+      color: var(--on-surface-variant);
+      white-space: pre-line;
+    }
+
+    .pd-divider {
+      border: none;
+      border-top: 1px solid var(--outline-variant);
+    }
+
+    .pd-tags-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--on-surface-variant);
+      margin-bottom: 0.5rem;
+    }
+
+    .pd-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .pd-actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .pd-actions .btn {
+      flex: 1;
+      justify-content: center;
+      min-width: 160px;
+    }
+
+    .pd-share {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--on-surface-variant);
+      cursor: pointer;
+      transition: color var(--transition);
+      background: none;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      padding: 0;
+    }
+
+    .pd-share:hover {
+      color: var(--primary);
+    }
+
+    /* ── Related products ────────────────────────────────── */
+    .related-section {
+      padding: 4rem 0;
+      border-top: 1px solid var(--outline-variant);
+    }
+
+    .related-section h2 {
+      margin-bottom: 2rem;
+    }
+
+    /* ── Loading skeleton ────────────────────────────────── */
+    .pd-skeleton {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .pd-skeleton-img {
+      aspect-ratio: 1;
+      background: var(--surface-container-high);
+      border-radius: var(--radius-md);
+    }
+
+    .pd-skeleton-line {
+      height: 1rem;
+      background: var(--surface-container-high);
+      border-radius: var(--radius-sm);
+      margin-bottom: 0.75rem;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* ── Error state ─────────────────────────────────────── */
+    .pd-error {
+      text-align: center;
+      padding: 5rem 2rem;
+    }
+
+    .pd-error .material-symbols-outlined {
+      font-size: 4rem;
+      color: var(--outline-variant);
+      display: block;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Lightbox (reutiliza el del sistema) ─────────────── */
+    .lightbox-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.92);
+      z-index: 400;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-modal.open {
+      display: flex;
+    }
+
+    /* ── Badge de estado de producto ────────────────────── */
+    .pd-badges {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .pd-badge {
+      padding: 0.25rem 0.65rem;
+      border-radius: 99px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .pd-badge-new {
+      background: var(--secondary);
+      color: #fff;
+    }
+
+    .pd-badge-top {
+      background: var(--tertiary);
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="nav-placeholder"></div>
+
+  <main>
+    <!-- Loading state inicial -->
+    <section class="product-detail-section">
+      <div class="container" id="pd-container">
+        <div id="pd-loading">
+          <div class="breadcrumb pd-skeleton">
+            <div class="pd-skeleton-line" style="width:200px;height:0.8rem;"></div>
+          </div>
+          <div class="product-detail-grid">
+            <div class="pd-skeleton pd-skeleton-img"></div>
+            <div class="pd-skeleton" style="padding-top:1rem;">
+              <div class="pd-skeleton-line" style="width:40%"></div>
+              <div class="pd-skeleton-line" style="width:80%;height:2rem;margin:1rem 0;"></div>
+              <div class="pd-skeleton-line" style="width:100%"></div>
+              <div class="pd-skeleton-line" style="width:100%"></div>
+              <div class="pd-skeleton-line" style="width:75%"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Contenido dinámico renderizado por JS -->
+        <div id="pd-content" style="display:none;"></div>
+      </div>
+    </section>
+
+    <!-- Productos relacionados -->
+    <section class="related-section" id="related-section" style="display:none;">
+      <div class="container">
+        <h2 id="related-title">También te puede interesar</h2>
+        <div class="product-grid" id="related-grid"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+  <!-- Lightbox Modal -->
+  <div class="lightbox-modal" id="lightbox-modal">
+    <div style="position:absolute;inset:0;z-index:400;" id="lb-overlay"></div>
+    <button class="modal-close"
+      style="position:absolute;top:1.5rem;right:1.5rem;color:#fff;background:none;border:none;cursor:pointer;z-index:410;"
+      onclick="closeLightbox()"><span class="material-symbols-outlined" style="font-size:2rem">close</span></button>
+    <button class="slider-btn"
+      style="position:absolute;left:1.5rem;top:50%;transform:translateY(-50%);z-index:410;display:none;" id="lb-prev"
+      onclick="lightboxPrev(event)"><span class="material-symbols-outlined">chevron_left</span></button>
+    <button class="slider-btn"
+      style="position:absolute;right:1.5rem;top:50%;transform:translateY(-50%);z-index:410;display:none;" id="lb-next"
+      onclick="lightboxNext(event)"><span class="material-symbols-outlined">chevron_right</span></button>
+    <img id="lightbox-img" src=""
+      style="max-width:90%;max-height:90%;object-fit:contain;border-radius:var(--radius-sm);position:relative;z-index:405;">
+  </div>
+
+  <script type="module" src="/js/producto.js"></script>
+</body>
+
+</html>
