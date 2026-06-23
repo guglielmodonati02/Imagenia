@@ -11,14 +11,16 @@
   <!-- Open Graph / Social Sharing -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="IMAGENIA - Mobiliario Sustentable para exterior">
-  <meta property="og:description" content="Trasformamos plástico reciclado en juegos infantiles y mobiliario para hoteles, residenciales y espacios urbanos.">
+  <meta property="og:description"
+    content="Trasformamos plástico reciclado en juegos infantiles y mobiliario para hoteles, residenciales y espacios urbanos.">
   <meta property="og:image" content="https://www.imagenia.com.mx/assets/logo_con_letras_blancas.png">
   <meta property="og:url" content="https://www.imagenia.com.mx/index.html">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="IMAGENIA - Mobiliario Sustentable para exterior">
-  <meta name="twitter:description" content="Trasformamos plástico reciclado en juegos infantiles y mobiliario para hoteles, residenciales y espacios urbanos.">
+  <meta name="twitter:description"
+    content="Trasformamos plástico reciclado en juegos infantiles y mobiliario para hoteles, residenciales y espacios urbanos.">
   <meta name="twitter:image" content="https://www.imagenia.com.mx/assets/logo_con_letras_blancas.png">
 
   <link rel="icon" type="image/x-icon" href="/assets/LOGO SIN FONDO.ico">
@@ -113,19 +115,26 @@
       </div> <!-- /container -->
     </section>
 
-    <!-- ═══ NUESTRAS CATEGORÍAS ═══ -->
-    <section class="section section-alt">
+    <!-- ═══ CAROUSEL DE FOTOS ═══ -->
+    <section class="section" id="home-photo-carousel-section" style="display:none">
       <div class="container">
-        <div style="text-align:center;margin-bottom:3rem">
-          <span class="label-sm text-secondary" id="home-categories-badge">Catálogo</span>
-          <h2 style="margin-top:0.5rem;color:var(--primary)" id="home-categories-title">Nuestras <span
-              style="color:var(--secondary)">Categorías</span></h2>
+        <div style="text-align:center;margin-bottom:2.5rem">
+          <span class="label-sm text-secondary">Galería</span>
+          <h2 style="margin-top:0.5rem;color:var(--primary)" id="home-carousel-title">Nuestros <span
+              style="color:var(--secondary)">Proyectos</span></h2>
         </div>
-        <div class="cat-img-grid" id="category-grid">
-          <div class="cat-img-card skeleton"></div>
-          <div class="cat-img-card skeleton"></div>
-          <div class="cat-img-card skeleton"></div>
-          <div class="cat-img-card skeleton"></div>
+        <div class="photo-carousel" id="photo-carousel">
+          <div class="photo-carousel-track" id="photo-carousel-track"></div>
+          <button class="photo-carousel-btn photo-carousel-prev" onclick="photoCarouselPrev()" aria-label="Anterior">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+          <button class="photo-carousel-btn photo-carousel-next" onclick="photoCarouselNext()" aria-label="Siguiente">
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+          <div class="photo-carousel-dots" id="photo-carousel-dots"></div>
+        </div>
+        <div style="text-align:center;margin-top:2.5rem">
+          <a href="/productos.html" class="btn btn-secondary">Ver todos los productos</a>
         </div>
       </div>
     </section>
@@ -145,25 +154,19 @@
       </div>
     </section>
 
-    <!-- ═══ CAROUSEL DE FOTOS ═══ -->
-    <section class="section" id="home-photo-carousel-section" style="display:none">
+    <!-- ═══ NUESTRAS CATEGORÍAS ═══ -->
+    <section class="section section-alt">
       <div class="container">
-        <div style="text-align:center;margin-bottom:2.5rem">
-          <span class="label-sm text-secondary">Galería</span>
-          <h2 style="margin-top:0.5rem;color:var(--primary)" id="home-carousel-title">Nuestros <span style="color:var(--secondary)">Proyectos</span></h2>
+        <div style="text-align:center;margin-bottom:3rem">
+          <span class="label-sm text-secondary" id="home-categories-badge">Catálogo</span>
+          <h2 style="margin-top:0.5rem;color:var(--primary)" id="home-categories-title">Nuestras <span
+              style="color:var(--secondary)">Categorías</span></h2>
         </div>
-        <div class="photo-carousel" id="photo-carousel">
-          <div class="photo-carousel-track" id="photo-carousel-track"></div>
-          <button class="photo-carousel-btn photo-carousel-prev" onclick="photoCarouselPrev()" aria-label="Anterior">
-            <span class="material-symbols-outlined">chevron_left</span>
-          </button>
-          <button class="photo-carousel-btn photo-carousel-next" onclick="photoCarouselNext()" aria-label="Siguiente">
-            <span class="material-symbols-outlined">chevron_right</span>
-          </button>
-          <div class="photo-carousel-dots" id="photo-carousel-dots"></div>
-        </div>
-        <div style="text-align:center;margin-top:2.5rem">
-          <a href="/productos.html" class="btn btn-secondary">Ver todos los productos</a>
+        <div class="cat-img-grid" id="category-grid">
+          <div class="cat-img-card skeleton"></div>
+          <div class="cat-img-card skeleton"></div>
+          <div class="cat-img-card skeleton"></div>
+          <div class="cat-img-card skeleton"></div>
         </div>
       </div>
     </section>

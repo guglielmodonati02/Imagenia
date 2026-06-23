@@ -231,19 +231,50 @@ function loadPhotoCarousel(settings) {
     if (Math.abs(diff) > 50) diff < 0 ? photoCarouselGoTo(photoCurrentIndex + 1) : photoCarouselGoTo(photoCurrentIndex - 1);
   }, { passive: true });
 
-  if (items.length > 1) photoTimer = setInterval(() => photoCarouselGoTo(photoCurrentIndex + 1), 4500);
+  const isMobile = window.innerWidth <= 768;
+  const visibleSlides = isMobile ? 1 : 3;
+  if (items.length > visibleSlides) {
+    photoTimer = setInterval(() => photoCarouselGoTo(photoCurrentIndex + 1), 4500);
+  } else {
+    // Hide prev/next buttons if not enough slides to scroll
+    document.querySelector('.photo-carousel-prev')?.style && (document.querySelector('.photo-carousel-prev').style.display = 'none');
+    document.querySelector('.photo-carousel-next')?.style && (document.querySelector('.photo-carousel-next').style.display = 'none');
+  }
 }
 
 function photoCarouselGoTo(index) {
   const allSlides = document.querySelectorAll('.photo-carousel-slide');
   const allDots   = document.querySelectorAll('.photo-carousel-dot');
+  
   allSlides[photoCurrentIndex]?.classList.remove('active');
   allDots[photoCurrentIndex]?.classList.remove('active');
-  photoCurrentIndex = ((index % photoSlides.length) + photoSlides.length) % photoSlides.length;
+  
+  const isMobile = window.innerWidth <= 768;
+  const visibleSlides = isMobile ? 1 : 3;
+  const maxIndex = Math.max(0, photoSlides.length - visibleSlides);
+  
+  if (index < 0) {
+    index = maxIndex;
+  } else if (index > maxIndex) {
+    index = 0;
+  }
+
+  photoCurrentIndex = index;
+  
   allSlides[photoCurrentIndex]?.classList.add('active');
-  allDots[photoCurrentIndex]?.classList.add('active');
+  // Puede que haya más puntos que maxIndex, si se hace click en uno mayor, activamos el último posible
+  if(allDots[photoCurrentIndex]) {
+    allDots[photoCurrentIndex].classList.add('active');
+  } else {
+    allDots[maxIndex]?.classList.add('active');
+  }
+  
+  const track = document.getElementById('photo-carousel-track');
+  const slidePercentage = isMobile ? 100 : 33.3333;
+  track.style.transform = `translateX(-${photoCurrentIndex * slidePercentage}%)`;
+
   clearInterval(photoTimer);
-  if (photoSlides.length > 1) photoTimer = setInterval(() => photoCarouselGoTo(photoCurrentIndex + 1), 4500);
+  if (photoSlides.length > visibleSlides) photoTimer = setInterval(() => photoCarouselGoTo(photoCurrentIndex + 1), 4500);
 }
 
 window.photoCarouselPrev = () => photoCarouselGoTo(photoCurrentIndex - 1);
