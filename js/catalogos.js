@@ -83,6 +83,12 @@ window.scrollToCatalog = function(id) {
 };
 
 window.openPDFPreview = function(url, title) {
+  // iOS and most Android browsers can't render PDFs inside iframes
+  const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|Mobile/i.test(navigator.userAgent);
+  if (isMobile) {
+    window.open(url, '_blank');
+    return;
+  }
   document.getElementById('pdf-preview-title').textContent = title;
   document.getElementById('pdf-iframe').src = url;
   document.getElementById('modal-pdf-preview').classList.add('open');
